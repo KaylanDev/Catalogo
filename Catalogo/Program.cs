@@ -47,12 +47,17 @@ builder.Services.AddTransient<IMeuService, MeuSevico>();
 builder.Services.Configure<ApiBehaviorOptions>(options => 
 options.DisableImplicitFromServicesParameters = true
 );
-
+/*
+ * testando o configuration para pegar valores no arquivo JSON
+var chave1 = builder.Configuration["chave1"];
+var chave2 = builder.Configuration["secao:chave2"];
+*/
 string? mysqlconectio = builder.Configuration.GetConnectionString("Conexao");
 
 builder.Services.AddDbContext<AppDbContext>(options
     => options.UseMySql(mysqlconectio,
     ServerVersion.AutoDetect(mysqlconectio)));
+
 
 var app = builder.Build();
 

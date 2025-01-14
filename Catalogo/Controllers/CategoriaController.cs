@@ -11,14 +11,29 @@ namespace Catalogo.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class CategoriaController : Controller
+    public class CategoriaController : ControllerBase
     {
         private readonly AppDbContext _context;
+        //variavel para usar o configuration
+        private readonly IConfiguration _configuration;
 
-        public CategoriaController(AppDbContext context)
+        public CategoriaController(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
+
+        ///<summary>
+        ///testando o configuration
+        ///</summary>
+        [HttpGet("String")]
+        public string GetValores()
+        {
+            var chave1 = _configuration["chave1"];
+            return $"{chave1}";
+        }
+
+
         /*
         [HttpGet("ComFromService/{nome}")]
         public ActionResult<string> GetComFrom(string nome,[FromServices]IMeuService service)
@@ -31,7 +46,7 @@ namespace Catalogo.Controllers
         {
             return service.BemVindo(nome);
         }
-          */      
+          */
         //comentarios em xml
         /// <summary>
         /// Retorna os itens.
