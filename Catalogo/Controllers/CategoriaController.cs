@@ -104,6 +104,8 @@ namespace Catalogo.Controllers
         [Route("produtos")]
         public async Task<ActionResult<IEnumerable<Categoria>>> GetCategoriaProdutos()
         {
+            throw new Exception("meu pau");
+            
             try
             {
                 return await _context.Categorias.Include(p => p.Produtos).Where(p => p.CategoriaId < 5).ToListAsync();

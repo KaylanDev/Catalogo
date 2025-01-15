@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using System.Reflection;
 using Catalogo.Services;
 using Microsoft.AspNetCore.Mvc;
+using Catalogo.Models.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -68,6 +69,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.ConfigureExeptionHandler();
 }
 
 
