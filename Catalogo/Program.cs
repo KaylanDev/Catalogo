@@ -10,13 +10,19 @@ using Microsoft.AspNetCore.Mvc;
 using Catalogo.Models.Extensions;
 using Catalogo.Logging;
 using Catalogo.Filters;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+//remove o limitador de caracters retornado do json e adiciona um tratador de excecoes global com filtros
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add(typeof(ApiExceptionFilter));
+}).AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 
-builder.Services.AddControllers().AddJsonOptions(options 
-    => options.JsonSerializerOptions.ReferenceHandler
-    = ReferenceHandler.IgnoreCycles);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

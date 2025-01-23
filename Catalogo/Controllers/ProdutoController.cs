@@ -28,21 +28,16 @@ namespace Catalogo.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Produto>> Get()
         {
-            try
-            {
+           
+            
                 var produtos = _context.Produtos.AsNoTracking().Take(10).ToList();
 
 
                 if (produtos is null) return NotFound();
 
                 return produtos;
-            }
-            catch (Exception)
-            {
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-
-            }
+            
+           
 
         }
 
@@ -53,19 +48,13 @@ namespace Catalogo.Controllers
         [HttpGet("{id:int}", Name = "obterproduto")]
         public ActionResult<Produto> Get(int id)
         {
-            try
-            {
+            
                 var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
                 if (produto is null) return NotFound("O produto n existe!");
 
 
                 return produto;
-            }
-            catch (Exception)
-            {
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-            }
+            
 
         }
 
@@ -77,18 +66,13 @@ namespace Catalogo.Controllers
         [HttpPost]
         public ActionResult Post(Produto produto)
         {
-            try
-            {
+           
+            
                 if (produto is null) return BadRequest();
                 _context.Produtos.Add(produto);
                 _context.SaveChanges();
                 return new CreatedAtRouteResult("obterproduto", new { id = produto.ProdutoId }, produto);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-            }
-
+          
         }
 
         /// <summary>
@@ -98,20 +82,13 @@ namespace Catalogo.Controllers
         [HttpPut("{id:int}")]
         public ActionResult Put(int id, Produto produto)
         {
-            try
-            {
+          
                 if (id != produto.ProdutoId) return BadRequest();
 
                 _context.Entry(produto).State = EntityState.Modified;
                 _context.SaveChanges();
                 return Ok(produto);
-            }
-            catch (Exception)
-            {
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-
-            }
+         
         }
 
         /// <summary>
@@ -120,19 +97,14 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            try
-            {
+           
                 var produto = _context.Produtos.FirstOrDefault(p => id == p.ProdutoId);
                 if (produto is null) return NotFound("produto n encontrado");
 
                 _context.Produtos.Remove(produto);
                 _context.SaveChanges();
                 return Ok(produto);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-            }
+           
         }
     }
 }

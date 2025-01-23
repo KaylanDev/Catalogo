@@ -34,7 +34,7 @@ namespace Catalogo.Controllers
             return $"{chave1}";
         }
 
-
+        //teste do get com from service
         /*
         [HttpGet("ComFromService/{nome}")]
         public ActionResult<string> GetComFrom(string nome,[FromServices]IMeuService service)
@@ -48,6 +48,8 @@ namespace Catalogo.Controllers
             return service.BemVindo(nome);
         }
           */
+
+
         //comentarios em xml
         /// <summary>
         /// Retorna os itens.
@@ -80,19 +82,14 @@ namespace Catalogo.Controllers
         public ActionResult Get(int id)
         {
 
-            try
-            {
+            
+            
                 var categoria = _context.Categorias.FirstOrDefault(p => p.CategoriaId == id);
 
                 if (categoria is null) return NotFound("n encontrou");
                 return Ok(categoria);
-            }
-            catch (Exception)
-            {
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-                //tratando erro com a classe statuscode
-            }
+            
+          
 
 
 
@@ -106,20 +103,10 @@ namespace Catalogo.Controllers
         [Route("produtos")]
         public async Task<ActionResult<IEnumerable<Categoria>>> GetCategoriaProdutos()
         {
-            
-            
-            try
-            {
+          
+           
                 return await _context.Categorias.Include(p => p.Produtos).Where(p => p.CategoriaId < 5).ToListAsync();
                 //o where limita a consulta para evitar uma grande quantidade de dados retornado.
-
-            }
-            catch (Exception)
-            {
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-
-            }
 
         }
 
@@ -130,21 +117,14 @@ namespace Catalogo.Controllers
         [HttpPost]
         public ActionResult<Categoria> post(Categoria categoria)
         {
-            try
-            {
+           
                 if (categoria is null) return BadRequest("tem erro ai");
 
                 _context.Categorias.Add(categoria);
                 _context.SaveChanges();
 
                 return new CreatedAtRouteResult("categoria", new { id = categoria.CategoriaId }, categoria);
-            }
-            catch (Exception)
-            {
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-
-            }
+        
 
         }
 
@@ -156,8 +136,7 @@ namespace Catalogo.Controllers
         [HttpPut("{id:int}")]
         public ActionResult<Categoria> Put(int id, Categoria categoria)
         {
-            try
-            {
+            
                 if (id != categoria.CategoriaId) return BadRequest();
 
                 //entry modifica o elemento selecionado e o state recebe o modo modified q avisa q esta sendo modificado
@@ -165,13 +144,7 @@ namespace Catalogo.Controllers
                 _context.SaveChanges();
 
                 return Ok(categoria);
-            }
-            catch (Exception)
-            {
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-
-            }
+           
 
         }
 
@@ -181,8 +154,8 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            try
-            {
+           
+            
                 var categoria = _context.Categorias.FirstOrDefault(p => id == p.CategoriaId);
                 if (categoria is null) return NotFound("produto n encontrado");
 
@@ -190,12 +163,7 @@ namespace Catalogo.Controllers
                 _context.SaveChanges();
                 return Ok(categoria);
 
-            }
-            catch (Exception)
-            {
 
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-            }
 
 
         }
