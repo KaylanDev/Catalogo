@@ -104,7 +104,7 @@ namespace Catalogo.Controllers
         [Route("produtos")]
         public async Task<ActionResult<IEnumerable<Categoria>>> GetCategoriaProdutos()
         {
-            throw new Exception("meu pau");
+            
             
             try
             {
