@@ -15,7 +15,7 @@ namespace Catalogo.Logging
 
         public ILogger CreateLogger(string categoryName)
         {
-            return Loggers.GetOrAdd(categoryName, name => new CostumerLogger(name, config));
+            return Loggers.GetOrAdd(categoryName, name => new CustomerLogger(name, config));
         }
 
         public void Dispose()

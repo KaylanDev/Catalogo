@@ -27,12 +27,13 @@ namespace Catalogo.Logging
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             string Message = $"{logLevel.ToString()} : {eventId.Id} - {formatter(state,exception)}";
+            EscreverTextoNoArquivo(Message);
 
         }
 
         private void EscreverTextoNoArquivo(string message)
         {
-            string caminhoArquivoLog = "C:\\Users\\kaylan\\source\\repos\\Catalogo";
+            string caminhoArquivoLog = @"C:\Users\kaylan\source\Log\Log.txt";
 
             using (StreamWriter sw = new StreamWriter(caminhoArquivoLog, true))
             {

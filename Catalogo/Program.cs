@@ -8,6 +8,7 @@ using System.Reflection;
 using Catalogo.Services;
 using Microsoft.AspNetCore.Mvc;
 using Catalogo.Models.Extensions;
+using Catalogo.Logging;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -58,7 +59,10 @@ string? mysqlconectio = builder.Configuration.GetConnectionString("Conexao");
 builder.Services.AddDbContext<AppDbContext>(options
     => options.UseMySql(mysqlconectio,
     ServerVersion.AutoDetect(mysqlconectio)));
-
+builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderConfig
+{
+    LogLever = LogLevel.Information
+}));
 
 var app = builder.Build();
 
