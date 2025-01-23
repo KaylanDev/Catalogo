@@ -1,4 +1,5 @@
 ﻿using Catalogo.Data;
+using Catalogo.Filters;
 using Catalogo.Models;
 using Catalogo.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -53,6 +54,7 @@ namespace Catalogo.Controllers
         /// </summary>
 
         [HttpGet]
+        [ServiceFilter(typeof(ApiLoggingFilters))]
         public async Task<ActionResult<IEnumerable<Categoria>>> GetAsync()
         {
             try
