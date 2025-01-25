@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Catalogo.Models.Extensions;
 using Catalogo.Logging;
 using Catalogo.Filters;
+using Catalogo.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +72,7 @@ builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderCon
     LogLever = LogLevel.Information
 }));
 builder.Services.AddScoped<ApiLoggingFilters>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 
 var app = builder.Build();
 

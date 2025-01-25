@@ -1,6 +1,8 @@
-﻿using Catalogo.Data;
+﻿using Azure.Core;
+using Catalogo.Data;
 using Catalogo.Filters;
 using Catalogo.Models;
+using Catalogo.Repositories;
 using Catalogo.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,16 +16,18 @@ namespace Catalogo.Controllers
     [Route("[controller]")]
     public class CategoriaController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ICategoriaRepository _repository;
+        private readonly ILogger _logger;
         //variavel para usar o configuration
-        private readonly IConfiguration _configuration;
+        //private readonly IConfiguration _configuration;
 
-        public CategoriaController(AppDbContext context, IConfiguration configuration)
+        public CategoriaController(ICategoriaRepository repository, ILogger logger /*IConfiguration configuration*/)
         {
-            _context = context;
-            _configuration = configuration;
+            _logger = logger;
+            _repository = repository;
+            /*_configuration = configuration;*/
         }
-
+        /*
         ///<summary>
         ///testando o configuration
         ///</summary>
@@ -33,7 +37,7 @@ namespace Catalogo.Controllers
             var chave1 = _configuration["chave1"];
             return $"{chave1}";
         }
-
+        */
         //teste do get com from service
         /*
         [HttpGet("ComFromService/{nome}")]
@@ -56,22 +60,12 @@ namespace Catalogo.Controllers
         /// </summary>
 
         [HttpGet]
-        [ServiceFilter(typeof(ApiLoggingFilters))]
-        public async Task<ActionResult<IEnumerable<Categoria>>> GetAsync()
+        public ActionResult<IEnumerable<Categoria>> Get()
         {
-            try
-            {
-                return await _context.Categorias.AsNoTracking().Take(10).ToListAsync();
-                //AsNoTracking evita a sobrecarga, deixando a consulta otimizada
-                //Take ira limitar a consulta apenas com os 10 primeiros
-
-            }
-            catch (Exception)
-            {
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno");
-            }
-
+            var categorias = _repository.GetCategorias();
+            return Ok(categorias);
+            //AsNoTracking evita a sobrecarga, deixando a consulta otimizada
+            //Take ira limitar a consulta apenas com os 10 primeiros
         }
 
         /// <summary>
@@ -81,18 +75,16 @@ namespace Catalogo.Controllers
         [HttpGet("{id:int}", Name = "categoria")]
         public ActionResult Get(int id)
         {
+            var categoria = _repository.GetCategoria(id);
 
-            
-            
-                var categoria = _context.Categorias.FirstOrDefault(p => p.CategoriaId == id);
+            if (categoria is null)
+            {
+                _logger.LogWarning($"Categoria com Id {id} nao encontrado!");
+                return NotFound($"Categoria com Id {id} nao encontrado!");
 
-                if (categoria is null) return NotFound("n encontrou");
-                return Ok(categoria);
-            
-          
+            }
 
-
-
+            return Ok(categoria);
         }
 
         /// <summary>
@@ -101,12 +93,11 @@ namespace Catalogo.Controllers
         //metodo que ira retornar produtos relacionados
         [HttpGet]
         [Route("produtos")]
-        public async Task<ActionResult<IEnumerable<Categoria>>> GetCategoriaProdutos()
+        public ActionResult<IEnumerable<Categoria>> GetCategoriaProdutos()
         {
-          
-           
-                return await _context.Categorias.Include(p => p.Produtos).Where(p => p.CategoriaId < 5).ToListAsync();
-                //o where limita a consulta para evitar uma grande quantidade de dados retornado.
+            var categoriasProd = _repository.GetCategoriasProdutos();
+            return Ok(categoriasProd);
+            //o where limita a consulta para evitar uma grande quantidade de dados retornado.
 
         }
 
@@ -117,14 +108,19 @@ namespace Catalogo.Controllers
         [HttpPost]
         public ActionResult<Categoria> post(Categoria categoria)
         {
-           
-                if (categoria is null) return BadRequest("tem erro ai");
 
-                _context.Categorias.Add(categoria);
-                _context.SaveChanges();
+            if (categoria is null)
+            {
+                _logger.LogWarning("Dados invalidos...");
+                return BadRequest("Dados invalidos...");
+            }
 
-                return new CreatedAtRouteResult("categoria", new { id = categoria.CategoriaId }, categoria);
-        
+            var categoriaCriada = _repository.Create(categoria);
+
+
+
+            return new CreatedAtRouteResult("categoria", new { id = categoriaCriada.CategoriaId }, categoriaCriada);
+
 
         }
 
@@ -136,15 +132,16 @@ namespace Catalogo.Controllers
         [HttpPut("{id:int}")]
         public ActionResult<Categoria> Put(int id, Categoria categoria)
         {
-            
-                if (id != categoria.CategoriaId) return BadRequest();
 
-                //entry modifica o elemento selecionado e o state recebe o modo modified q avisa q esta sendo modificado
-                _context.Entry(categoria).State = EntityState.Modified;
-                _context.SaveChanges();
+            if (id != categoria.CategoriaId)
+            {
+                _logger.LogWarning("Dados invalidos...");
+                return BadRequest("Dados invalidos...");
+            }
+            var categoriaAtt = _repository.Update(categoria);
 
-                return Ok(categoria);
-           
+            return Ok(categoriaAtt);
+
 
         }
 
@@ -154,14 +151,15 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-           
-            
-                var categoria = _context.Categorias.FirstOrDefault(p => id == p.CategoriaId);
-                if (categoria is null) return NotFound("produto n encontrado");
 
-                _context.Categorias.Remove(categoria);
-                _context.SaveChanges();
-                return Ok(categoria);
+            var categoriaDelet = _repository.Delete(id);
+
+            if (categoriaDelet is null)
+            {
+                _logger.LogWarning("Dados invalidos...");
+                return NotFound("produto n encontrado");
+            }
+            return Ok(categoriaDelet);
 
 
 
