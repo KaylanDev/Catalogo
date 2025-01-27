@@ -17,13 +17,11 @@ namespace Catalogo.Controllers
     public class CategoriaController : ControllerBase
     {
         private readonly ICategoriaRepository _repository;
-        private readonly ILogger _logger;
         //variavel para usar o configuration
         //private readonly IConfiguration _configuration;
 
-        public CategoriaController(ICategoriaRepository repository, ILogger logger /*IConfiguration configuration*/)
+        public CategoriaController(ICategoriaRepository repository/*IConfiguration configuration*/)
         {
-            _logger = logger;
             _repository = repository;
             /*_configuration = configuration;*/
         }
@@ -79,7 +77,6 @@ namespace Catalogo.Controllers
 
             if (categoria is null)
             {
-                _logger.LogWarning($"Categoria com Id {id} nao encontrado!");
                 return NotFound($"Categoria com Id {id} nao encontrado!");
 
             }
@@ -111,7 +108,6 @@ namespace Catalogo.Controllers
 
             if (categoria is null)
             {
-                _logger.LogWarning("Dados invalidos...");
                 return BadRequest("Dados invalidos...");
             }
 
@@ -135,7 +131,6 @@ namespace Catalogo.Controllers
 
             if (id != categoria.CategoriaId)
             {
-                _logger.LogWarning("Dados invalidos...");
                 return BadRequest("Dados invalidos...");
             }
             var categoriaAtt = _repository.Update(categoria);
@@ -156,7 +151,6 @@ namespace Catalogo.Controllers
 
             if (categoriaDelet is null)
             {
-                _logger.LogWarning("Dados invalidos...");
                 return NotFound("produto n encontrado");
             }
             return Ok(categoriaDelet);
