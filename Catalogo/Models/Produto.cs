@@ -2,12 +2,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Catalogo.Validations;
+using System.Text.Json.Serialization;
 
 namespace Catalogo.Models;
 
 public class Produto : IValidatableObject
 {
     [Key]
+    
     public int ProdutoId { get; set; }
 
     [Required]
@@ -28,10 +30,13 @@ public class Produto : IValidatableObject
     public string? ImagemUrl { get; set; }
     [Range(0,10000,ErrorMessage ="O Valor precisa estar entre {1} e {2}!")]
     public float Estoque { get; set; }
-    public DateTime DataCadastro { get; set; }
+    public DateTime DataCadastro { get; set; } = DateTime.Now;
+  
     public int CategoriaId { get; set; }
+    [JsonIgnore]
     public Categoria?Categoria { get; set; }
 
+    //data annotation personalizado
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (!string.IsNullOrEmpty(this.Nome))

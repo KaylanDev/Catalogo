@@ -1,5 +1,6 @@
 ﻿using Catalogo.Data;
 using Catalogo.Models;
+using Catalogo.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +13,11 @@ namespace Catalogo.Controllers
 
     public class ProdutoController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IProductRepository _repository;
 
-        public ProdutoController(AppDbContext context)
+        public ProdutoController(IProductRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
 
@@ -26,18 +27,12 @@ namespace Catalogo.Controllers
         /// Retorna os itens.
         /// </summary>
         [HttpGet]
-        public ActionResult<IEnumerable<Produto>> Get()
+        public ActionResult<IQueryable<Produto>> Get()
         {
-           
-            
-                var produtos = _context.Produtos.AsNoTracking().Take(10).ToList();
 
+            var produtos = _repository.Get();
 
-                if (produtos is null) return NotFound();
-
-                return produtos;
-            
-           
+            return Ok(produtos);
 
         }
 
@@ -48,14 +43,8 @@ namespace Catalogo.Controllers
         [HttpGet("{id:int}", Name = "obterproduto")]
         public ActionResult<Produto> Get(int id)
         {
-            
-                var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
-                if (produto is null) return NotFound("O produto n existe!");
-
-
-                return produto;
-            
-
+            var produto = _repository.GetProduto(id);
+                return Ok(produto);
         }
 
         /// <summary>
@@ -66,13 +55,8 @@ namespace Catalogo.Controllers
         [HttpPost]
         public ActionResult Post(Produto produto)
         {
-           
-            
-                if (produto is null) return BadRequest();
-                _context.Produtos.Add(produto);
-                _context.SaveChanges();
-                return new CreatedAtRouteResult("obterproduto", new { id = produto.ProdutoId }, produto);
-          
+            _repository.Create(produto);
+            return Ok(produto);
         }
 
         /// <summary>
@@ -82,13 +66,8 @@ namespace Catalogo.Controllers
         [HttpPut("{id:int}")]
         public ActionResult Put(int id, Produto produto)
         {
-          
-                if (id != produto.ProdutoId) return BadRequest();
-
-                _context.Entry(produto).State = EntityState.Modified;
-                _context.SaveChanges();
-                return Ok(produto);
-         
+            _repository.Update(produto);
+            return Ok(produto);
         }
 
         /// <summary>
@@ -97,14 +76,8 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-           
-                var produto = _context.Produtos.FirstOrDefault(p => id == p.ProdutoId);
-                if (produto is null) return NotFound("produto n encontrado");
-
-                _context.Produtos.Remove(produto);
-                _context.SaveChanges();
-                return Ok(produto);
-           
+            if (_repository.Delete(id)) return Ok();
+            else return BadRequest("erro");
         }
     }
 }

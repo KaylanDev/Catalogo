@@ -72,7 +72,9 @@ builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderCon
     LogLever = LogLevel.Information
 }));
 builder.Services.AddScoped<ApiLoggingFilters>();
+//aplica o repository
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();
 
