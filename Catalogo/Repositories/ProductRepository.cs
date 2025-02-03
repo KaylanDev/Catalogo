@@ -1,4 +1,5 @@
-﻿using Catalogo.Data;
+﻿using Azure.Core;
+using Catalogo.Data;
 using Catalogo.Models;
 
 namespace Catalogo.Repositories
@@ -13,7 +14,8 @@ namespace Catalogo.Repositories
         }
         public IQueryable<Produto> Get()
         {
-            return _context.Produtos;
+            var produtos = _context.Produtos;
+            return produtos;
         }
 
         public Produto GetProduto(int id)
@@ -39,9 +41,11 @@ namespace Catalogo.Repositories
                 return false;
             }
 
-            _context.Produtos.Remove(produto); 
-            _context.SaveChanges();
-            return true;
+            
+                _context.Produtos.Remove(produto);
+                _context.SaveChanges();
+                return true;
+            
         }
 
 
@@ -50,12 +54,15 @@ namespace Catalogo.Repositories
         {
             if (produto is null)
             {
-                return false;
+                throw new ArgumentNullException("produto is null");
             }
-
-            _context.Produtos.Update(produto);
-            _context.SaveChanges();
-            return true;
+            if (_context.Produtos.Any(p => p.ProdutoId == produto.ProdutoId))
+            {
+                _context.Produtos.Update(produto);
+                _context.SaveChanges();
+                return true;
+            }
+            return false;
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using Catalogo.Data;
+﻿using Azure.Core;
+using Catalogo.Data;
 using Catalogo.Models;
 using Catalogo.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -30,7 +31,7 @@ namespace Catalogo.Controllers
         public ActionResult<IQueryable<Produto>> Get()
         {
 
-            var produtos = _repository.Get();
+            var produtos = _repository.Get().ToList();
 
             return Ok(produtos);
 
@@ -44,7 +45,7 @@ namespace Catalogo.Controllers
         public ActionResult<Produto> Get(int id)
         {
             var produto = _repository.GetProduto(id);
-                return Ok(produto);
+            return Ok(produto);
         }
 
         /// <summary>
@@ -55,8 +56,14 @@ namespace Catalogo.Controllers
         [HttpPost]
         public ActionResult Post(Produto produto)
         {
-            _repository.Create(produto);
-            return Ok(produto);
+            if (produto is null)
+            {
+                return BadRequest();
+            }
+
+            var Novoproduto = _repository.Create(produto);
+            return new CreatedAtRouteResult("obterproduto",
+                new { Id = Novoproduto.ProdutoId }, Novoproduto);
         }
 
         /// <summary>
@@ -66,8 +73,21 @@ namespace Catalogo.Controllers
         [HttpPut("{id:int}")]
         public ActionResult Put(int id, Produto produto)
         {
-            _repository.Update(produto);
-            return Ok(produto);
+            if (id != produto.ProdutoId)
+            {
+                return BadRequest();
+            }
+
+            bool atualizado = _repository.Update(produto);
+            if (atualizado)
+            {
+                return Ok(produto);
+
+            }
+            else
+            {
+                return StatusCode(500,$"Falha ao atualizar o Produto com Id = {id}"); 
+            }
         }
 
         /// <summary>
@@ -76,8 +96,16 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            if (_repository.Delete(id)) return Ok();
-            else return BadRequest("erro");
+;           bool delete = _repository.Delete(id);
+
+            if (delete)
+            {
+                return Ok($"produto com id = {id} Excluido!");
+            }
+            else
+            {
+                return BadRequest($"Falha ao excluir  Produto com Id = {id}");
+            }
         }
     }
 }
