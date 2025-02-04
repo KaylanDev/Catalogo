@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Catalogo.Repositories
 {
-    public interface IProductRepository
+    public interface IProductRepository : IRepositoy<Produto>
     {
-        IQueryable<Produto> Get();
-        Produto GetProduto(int id);
-        Produto Create(Produto produto);
-        bool Update(Produto produto);
-        bool Delete(int id);
+
+        public IEnumerable<Produto> GetProdutosPorCategoria(int id);
+        
+
+        
     }
 }

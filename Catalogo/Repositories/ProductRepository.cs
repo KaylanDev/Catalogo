@@ -4,65 +4,18 @@ using Catalogo.Models;
 
 namespace Catalogo.Repositories
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : Repository<Produto>, IProductRepository
     {
-        private readonly AppDbContext _context;
 
-        public ProductRepository(AppDbContext context)
-        {
-            _context = context;
-        }
-        public IQueryable<Produto> Get()
-        {
-            var produtos = _context.Produtos;
-            return produtos;
+
+        public ProductRepository(AppDbContext context):base(context) {
+        
         }
 
-        public Produto GetProduto(int id)
+        public IEnumerable<Produto> GetProdutosPorCategoria(int id)
         {
-            return _context.Produtos.Find(id);
-        }
-        public Produto Create(Produto produto)
-        {
-            if (produto is not null)
-            {
-                _context.Produtos.Add(produto);
-                _context.SaveChanges();
-                return produto;
-            }
-            throw new ArgumentNullException();
-        }
+            return GetAll().Where(c => c.CategoriaId == id).ToList();
 
-        public bool Delete(int Id)
-        {
-            var produto = _context.Produtos.Find(Id);
-            if (produto is null)
-            {
-                return false;
-            }
-
-            
-                _context.Produtos.Remove(produto);
-                _context.SaveChanges();
-                return true;
-            
-        }
-
-
-
-        public bool Update(Produto produto)
-        {
-            if (produto is null)
-            {
-                throw new ArgumentNullException("produto is null");
-            }
-            if (_context.Produtos.Any(p => p.ProdutoId == produto.ProdutoId))
-            {
-                _context.Produtos.Update(produto);
-                _context.SaveChanges();
-                return true;
-            }
-            return false;
         }
     }
 
