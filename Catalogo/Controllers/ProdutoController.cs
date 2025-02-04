@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Catalogo.Controllers
 {
@@ -31,7 +32,7 @@ namespace Catalogo.Controllers
         public ActionResult<IQueryable<Produto>> Get()
         {
 
-            var produtos = _repository.Get().ToList();
+            var produtos = _repository.GetAll().ToList();
 
             return Ok(produtos);
 
@@ -43,8 +44,8 @@ namespace Catalogo.Controllers
         //metodo que ira retornar pelo Id
         [HttpGet("{id:int}", Name = "obterproduto")]
         public ActionResult<Produto> Get(int id)
-        {
-            var produto = _repository.GetProduto(id);
+        { 
+            var produto = _repository.GetById(p => p.ProdutoId == id);
             return Ok(produto);
         }
 
@@ -75,19 +76,14 @@ namespace Catalogo.Controllers
         {
             if (id != produto.ProdutoId)
             {
+                return BadRequest("Id informado é diferente");
+            }
+            if (produto is null)
+            {
                 return BadRequest();
             }
-
-            bool atualizado = _repository.Update(produto);
-            if (atualizado)
-            {
-                return Ok(produto);
-
-            }
-            else
-            {
-                return StatusCode(500,$"Falha ao atualizar o Produto com Id = {id}"); 
-            }
+              _repository.Update(produto);
+            return Ok(produto);
         }
 
         /// <summary>
@@ -96,16 +92,10 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-;           bool delete = _repository.Delete(id);
+            var produto = _repository.GetById(p => p.ProdutoId == id)
+;           _repository.Delete(produto);
 
-            if (delete)
-            {
-                return Ok($"produto com id = {id} Excluido!");
-            }
-            else
-            {
-                return BadRequest($"Falha ao excluir  Produto com Id = {id}");
-            }
+            return Ok(produto);
         }
     }
 }

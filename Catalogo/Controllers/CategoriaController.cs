@@ -60,7 +60,7 @@ namespace Catalogo.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Categoria>> Get()
         {
-            var categorias = _repository.GetCategorias();
+            var categorias = _repository.GetAll();
             return Ok(categorias);
             //AsNoTracking evita a sobrecarga, deixando a consulta otimizada
             //Take ira limitar a consulta apenas com os 10 primeiros
@@ -73,7 +73,7 @@ namespace Catalogo.Controllers
         [HttpGet("{id:int}", Name = "categoria")]
         public ActionResult Get(int id)
         {
-            var categoria = _repository.GetCategoria(id);
+            var categoria = _repository.GetById(c => c.CategoriaId == id);
 
             if (categoria is null)
             {
@@ -146,13 +146,17 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-
-            var categoriaDelet = _repository.Delete(id);
-
-            if (categoriaDelet is null)
+            var categoria = _repository.GetById(c => c.CategoriaId == id);
+            if (categoria is null)
             {
                 return NotFound("produto n encontrado");
             }
+            var categoriaDelet = _repository.Delete(categoria);
+            if (categoriaDelet is null)
+            {
+                return BadRequest("Falha ao deletar categoria");
+            }
+            
             return Ok(categoriaDelet);
 
 
