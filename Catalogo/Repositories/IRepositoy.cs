@@ -8,7 +8,7 @@ namespace Catalogo.Repositories
         T GetById(Expression <Func<T,bool>> predicate);
         T Create(T entity);
         T Update(T entity);
-        T delete(T entity);
+        T Delete(T entity);
 
     }
 }
