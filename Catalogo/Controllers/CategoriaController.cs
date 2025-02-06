@@ -16,13 +16,14 @@ namespace Catalogo.Controllers
     [Route("[controller]")]
     public class CategoriaController : ControllerBase
     {
-        private readonly ICategoriaRepository _repository;
+        private readonly IUnitOfWork _uof;
+
         //variavel para usar o configuration
         //private readonly IConfiguration _configuration;
 
-        public CategoriaController(ICategoriaRepository repository/*IConfiguration configuration*/)
+        public CategoriaController(IUnitOfWork Iunit/*IConfiguration configuration*/)
         {
-            _repository = repository;
+            _uof = Iunit;
             /*_configuration = configuration;*/
         }
         /*
@@ -60,10 +61,9 @@ namespace Catalogo.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Categoria>> Get()
         {
-            var categorias = _repository.GetAll();
+            var categorias = _uof.CategoriaRepository.GetAll();
             return Ok(categorias);
-            //AsNoTracking evita a sobrecarga, deixando a consulta otimizada
-            //Take ira limitar a consulta apenas com os 10 primeiros
+           
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Catalogo.Controllers
         [HttpGet("{id:int}", Name = "categoria")]
         public ActionResult Get(int id)
         {
-            var categoria = _repository.GetById(c => c.CategoriaId == id);
+            var categoria = _uof.CategoriaRepository.GetById(c => c.CategoriaId == id);
 
             if (categoria is null)
             {
@@ -92,9 +92,9 @@ namespace Catalogo.Controllers
         [Route("produtos")]
         public ActionResult<IEnumerable<Categoria>> GetCategoriaProdutos()
         {
-            var categoriasProd = _repository.GetCategoriasProdutos();
+            var categoriasProd = _uof.CategoriaRepository.GetCategoriasProdutos();
             return Ok(categoriasProd);
-            //o where limita a consulta para evitar uma grande quantidade de dados retornado.
+           
 
         }
 
@@ -111,8 +111,8 @@ namespace Catalogo.Controllers
                 return BadRequest("Dados invalidos...");
             }
 
-            var categoriaCriada = _repository.Create(categoria);
-
+            var categoriaCriada = _uof.CategoriaRepository.Create(categoria);
+            _uof.Commit();
 
 
             return new CreatedAtRouteResult("categoria", new { id = categoriaCriada.CategoriaId }, categoriaCriada);
@@ -133,7 +133,8 @@ namespace Catalogo.Controllers
             {
                 return BadRequest("Dados invalidos...");
             }
-            var categoriaAtt = _repository.Update(categoria);
+            var categoriaAtt = _uof.CategoriaRepository.Update(categoria);
+            _uof.Commit();
 
             return Ok(categoriaAtt);
 
@@ -146,17 +147,17 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var categoria = _repository.GetById(c => c.CategoriaId == id);
+            var categoria = _uof.CategoriaRepository.GetById(c => c.CategoriaId == id);
             if (categoria is null)
             {
                 return NotFound("produto n encontrado");
             }
-            var categoriaDelet = _repository.Delete(categoria);
+            var categoriaDelet = _uof.CategoriaRepository.Delete(categoria);
             if (categoriaDelet is null)
             {
                 return BadRequest("Falha ao deletar categoria");
             }
-            
+            _uof.Commit();
             return Ok(categoriaDelet);
 
 

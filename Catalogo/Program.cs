@@ -76,6 +76,7 @@ builder.Services.AddScoped<ApiLoggingFilters>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped(typeof(IRepositoy<>), typeof(Repository<>));
+builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
 
 var app = builder.Build();
 

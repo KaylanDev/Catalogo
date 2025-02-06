@@ -15,11 +15,11 @@ namespace Catalogo.Controllers
 
     public class ProdutoController : ControllerBase
     {
-        private readonly IProductRepository _repository;
+        private readonly IUnitOfWork _uof;
 
-        public ProdutoController(IProductRepository repository)
+        public ProdutoController(IUnitOfWork uof)
         {
-            _repository = repository;
+            _uof = uof;
         }
 
 
@@ -32,7 +32,7 @@ namespace Catalogo.Controllers
         public ActionResult<IQueryable<Produto>> Get()
         {
 
-            var produtos = _repository.GetAll().ToList();
+            var produtos = _uof.ProductRepository.GetAll().ToList();
 
             return Ok(produtos);
 
@@ -44,8 +44,9 @@ namespace Catalogo.Controllers
         //metodo que ira retornar pelo Id
         [HttpGet("{id:int}", Name = "obterproduto")]
         public ActionResult<Produto> Get(int id)
-        { 
-            var produto = _repository.GetById(p => p.ProdutoId == id);
+        {
+            var produto = _uof.ProductRepository.GetById(p => p.ProdutoId == id);
+
             return Ok(produto);
         }
 
@@ -62,7 +63,8 @@ namespace Catalogo.Controllers
                 return BadRequest();
             }
 
-            var Novoproduto = _repository.Create(produto);
+            var Novoproduto = _uof.ProductRepository.Create(produto);
+            _uof.Commit();
             return new CreatedAtRouteResult("obterproduto",
                 new { Id = Novoproduto.ProdutoId }, Novoproduto);
         }
@@ -82,7 +84,8 @@ namespace Catalogo.Controllers
             {
                 return BadRequest();
             }
-              _repository.Update(produto);
+              _uof.ProductRepository.Update(produto);
+            _uof.Commit(); 
             return Ok(produto);
         }
 
@@ -92,8 +95,9 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var produto = _repository.GetById(p => p.ProdutoId == id)
-;           _repository.Delete(produto);
+            var produto = _uof.ProductRepository.GetById(p => p.ProdutoId == id)
+;           _uof.ProductRepository.Delete(produto);
+            _uof.Commit();
 
             return Ok(produto);
         }
