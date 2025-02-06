@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Catalogo.Controllers
@@ -16,10 +17,13 @@ namespace Catalogo.Controllers
     public class ProdutoController : ControllerBase
     {
         private readonly IUnitOfWork _uof;
+        //ao adicionar o ILogger, lembre de colocar a class
+        private readonly ILogger<ProdutoController> _logger;
 
-        public ProdutoController(IUnitOfWork uof)
+        public ProdutoController(IUnitOfWork uof, ILogger<ProdutoController> logger)
         {
             _uof = uof;
+            _logger = logger;   
         }
 
 
