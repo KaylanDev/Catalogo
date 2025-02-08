@@ -103,6 +103,7 @@ namespace Catalogo.Controllers
 ;           _uof.ProductRepository.Delete(produto);
             _uof.Commit();
 
+
             return Ok(produto);
         }
     }
