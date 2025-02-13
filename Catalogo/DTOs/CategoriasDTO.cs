@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Catalogo.DTOs
 {
-    public class CatalogoDTO
+    public class CategoriasDTO
     {
 
         
@@ -15,7 +15,6 @@ namespace Catalogo.DTOs
         public string? ImagemUrl { get; set; }
 
 
-        public ICollection<Produto> Produtos { get; set; }
 
     
 

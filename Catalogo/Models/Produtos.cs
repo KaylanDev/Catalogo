@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Catalogo.Models;
 
-public class Produto : IValidatableObject
+public class Produtos : IValidatableObject
 {
     [Key]
     
@@ -34,7 +34,7 @@ public class Produto : IValidatableObject
   
     public int CategoriaId { get; set; }
     [JsonIgnore]
-    public Categoria?Categoria { get; set; }
+    public Categorias?Categoria { get; set; }
 
     //data annotation personalizado
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

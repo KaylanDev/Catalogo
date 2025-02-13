@@ -2,10 +2,10 @@
 
 namespace Catalogo.Repositories;
 
-public interface ICategoriaRepository : IRepositoy<Categoria>
+public interface ICategoriaRepository : IRepositoy<Categorias>
 {
   
-    IEnumerable<Categoria> GetCategoriasProdutos();
+    IEnumerable<Categorias> GetCategoriasProdutos();
 
 
 }

@@ -4,7 +4,7 @@ using Catalogo.Models;
 
 namespace Catalogo.Repositories
 {
-    public class ProductRepository : Repository<Produto>, IProductRepository
+    public class ProductRepository : Repository<Produtos>, IProductRepository
     {
 
 
@@ -12,7 +12,7 @@ namespace Catalogo.Repositories
         
         }
 
-        public IEnumerable<Produto> GetProdutosPorCategoria(int id)
+        public IEnumerable<Produtos> GetProdutosPorCategoria(int id)
         {
             return GetAll().Where(c => c.CategoriaId == id).ToList();
 

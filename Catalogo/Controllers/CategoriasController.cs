@@ -1,5 +1,7 @@
 ﻿using Azure.Core;
 using Catalogo.Data;
+using Catalogo.DTOs;
+using Catalogo.DTOs.Mappins;
 using Catalogo.Filters;
 using Catalogo.Models;
 using Catalogo.Repositories;
@@ -14,14 +16,14 @@ namespace Catalogo.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class CategoriaController : ControllerBase
+    public class CategoriasController : ControllerBase
     {
         private readonly IUnitOfWork _uof;
 
         //variavel para usar o configuration
         //private readonly IConfiguration _configuration;
 
-        public CategoriaController(IUnitOfWork Iunit/*IConfiguration configuration*/)
+        public CategoriasController(IUnitOfWork Iunit/*IConfiguration configuration*/)
         {
             _uof = Iunit;
             /*_configuration = configuration;*/
@@ -59,7 +61,7 @@ namespace Catalogo.Controllers
         /// </summary>
 
         [HttpGet]
-        public ActionResult<IEnumerable<Categoria>> Get()
+        public ActionResult<IEnumerable<CategoriasDTO>> Get()
         {
             var categorias = _uof.CategoriaRepository.GetAll();
             return Ok(categorias);
@@ -80,8 +82,8 @@ namespace Catalogo.Controllers
                 return NotFound($"Categoria com Id {id} nao encontrado!");
 
             }
-
-            return Ok(categoria);
+            var categoriaDTO = categoria.TocategoriaDTO();
+            return Ok(categoriaDTO);
         }
 
         /// <summary>
@@ -90,7 +92,7 @@ namespace Catalogo.Controllers
         //metodo que ira retornar produtos relacionados
         [HttpGet]
         [Route("produtos")]
-        public ActionResult<IEnumerable<Categoria>> GetCategoriaProdutos()
+        public ActionResult<IEnumerable<Categorias>> GetCategoriaProdutos()
         {
             var categoriasProd = _uof.CategoriaRepository.GetCategoriasProdutos();
             return Ok(categoriasProd);
@@ -103,7 +105,7 @@ namespace Catalogo.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult<Categoria> post(Categoria categoria)
+        public ActionResult<Categorias> post(Categorias categoria)
         {
 
             if (categoria is null)
@@ -126,7 +128,7 @@ namespace Catalogo.Controllers
         /// <returns></returns>
 
         [HttpPut("{id:int}")]
-        public ActionResult<Categoria> Put(int id, Categoria categoria)
+        public ActionResult<Categorias> Put(int id, Categorias categoria)
         {
 
             if (id != categoria.CategoriaId)

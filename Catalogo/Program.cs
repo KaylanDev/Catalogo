@@ -11,6 +11,7 @@ using Catalogo.Models.Extensions;
 using Catalogo.Logging;
 using Catalogo.Filters;
 using Catalogo.Repositories;
+using Catalogo.DTOs.Mappins;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +73,7 @@ builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderCon
     LogLever = LogLevel.Information
 }));
 builder.Services.AddScoped<ApiLoggingFilters>();
+builder.Services.AddAutoMapper(typeof(ProdutosDTOMappingProfile));
 //aplica o repository
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();

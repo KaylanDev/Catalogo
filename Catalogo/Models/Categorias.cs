@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Catalogo.Models;
 [Table("Categoria")]
-public class Categoria
+public class Categorias
 {
     [Key]
     public int CategoriaId { get; set; }
@@ -17,11 +17,11 @@ public class Categoria
     public string? ImagemUrl { get; set; }
 
     
-    public ICollection<Produto> Produtos { get; set; }
+    public ICollection<Produtos> Produtos { get; set; }
 
-    public Categoria()
+    public Categorias()
     {
-        Produtos = new Collection<Produto>();
+        Produtos = new Collection<Produtos>();
     }
 
 }

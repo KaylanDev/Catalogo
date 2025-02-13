@@ -6,14 +6,14 @@ using Microsoft.Identity.Client;
 
 namespace Catalogo.Repositories
 {
-    public class CategoriaRepository : Repository<Categoria>, ICategoriaRepository
+    public class CategoriaRepository : Repository<Categorias>, ICategoriaRepository
     {
        
 
         public CategoriaRepository(AppDbContext context):base(context) { }
       
         
-        public IEnumerable<Categoria> GetCategoriasProdutos()
+        public IEnumerable<Categorias> GetCategoriasProdutos()
         {
             return _context.Categorias.Include(p => p.Produtos).Where(p => p.CategoriaId < 10).ToList();
         }

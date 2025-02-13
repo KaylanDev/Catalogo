@@ -1,5 +1,8 @@
-﻿using Azure.Core;
+﻿using AutoMapper;
+using Azure.Core;
 using Catalogo.Data;
+using Catalogo.DTOs;
+using Catalogo.Migrations;
 using Catalogo.Models;
 using Catalogo.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -19,11 +22,13 @@ namespace Catalogo.Controllers
         private readonly IUnitOfWork _uof;
         //ao adicionar o ILogger, lembre de colocar a class
         private readonly ILogger<ProdutoController> _logger;
+        private readonly IMapper _mapper;
 
-        public ProdutoController(IUnitOfWork uof, ILogger<ProdutoController> logger)
+        public ProdutoController(IUnitOfWork uof, ILogger<ProdutoController> logger,IMapper mapper)
         {
             _uof = uof;
             _logger = logger;   
+            _mapper = mapper;
         }
 
 
@@ -33,13 +38,23 @@ namespace Catalogo.Controllers
         /// Retorna os itens.
         /// </summary>
         [HttpGet]
-        public ActionResult<IQueryable<Produto>> Get()
+        public ActionResult<IEnumerable<ProdutosDTO>> Get()
         {
 
             var produtos = _uof.ProductRepository.GetAll().ToList();
+            var produtosDto = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
 
-            return Ok(produtos);
+            return Ok(produtosDto);
 
+        }
+        [HttpGet("produtos/{id}")]
+        public ActionResult<IEnumerable<ProdutosDTO>> GetProdutosCategoria(int id)
+        {
+            var produtos = _uof.ProductRepository.GetProdutosPorCategoria(id);
+            if (produtos is null) return BadRequest();
+            //var destino = _mapper.Map<Destino>(origem)
+            var produtosDTO = _mapper.Map<IEnumerable<Produtos>>(produtos);
+            return Ok(produtosDTO);
         }
 
         /// <summary>
@@ -47,9 +62,10 @@ namespace Catalogo.Controllers
         /// </summary>
         //metodo que ira retornar pelo Id
         [HttpGet("{id:int}", Name = "obterproduto")]
-        public ActionResult<Produto> Get(int id)
+        public ActionResult<Produtos> Get(int id)
         {
             var produto = _uof.ProductRepository.GetById(p => p.ProdutoId == id);
+            var produtoDto = _mapper.Map<ProdutosDTO>(produto);
 
             return Ok(produto);
         }
@@ -60,17 +76,19 @@ namespace Catalogo.Controllers
         /// <returns></returns>
 
         [HttpPost]
-        public ActionResult Post(Produto produto)
+        public ActionResult<ProdutosDTO> Post(ProdutosDTO produtoDto)
         {
-            if (produto is null)
+            if (produtoDto is null)
             {
                 return BadRequest();
             }
 
-            var Novoproduto = _uof.ProductRepository.Create(produto);
+            var produto = _mapper.Map<Produtos>(produtoDto); 
+            _uof.ProductRepository.Create(produto);
             _uof.Commit();
+            var produtoDTo = _mapper.Map<ProdutosDTO>(produto);
             return new CreatedAtRouteResult("obterproduto",
-                new { Id = Novoproduto.ProdutoId }, Novoproduto);
+                new { Id = produtoDTo.ProdutoId }, produtoDTo);
         }
 
         /// <summary>
@@ -78,33 +96,35 @@ namespace Catalogo.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Produto produto)
+        public ActionResult<ProdutosDTO> Put(int id, ProdutosDTO produtoDto)
         {
-            if (id != produto.ProdutoId)
+            if (id != produtoDto.ProdutoId)
             {
                 return BadRequest("Id informado é diferente");
             }
-            if (produto is null)
+            if (produtoDto is null)
             {
                 return BadRequest();
             }
+            var produto = _mapper.Map<Produtos>(produtoDto);
               _uof.ProductRepository.Update(produto);
-            _uof.Commit(); 
-            return Ok(produto);
+            _uof.Commit();
+            var produtoAttDto = _mapper.Map<ProdutosDTO>(produto);
+            return Ok(produtoDto);
         }
 
         /// <summary>
         /// Deleta o elemento selecionado
         /// </summary>
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public ActionResult<ProdutosDTO> Delete(int id)
         {
             var produto = _uof.ProductRepository.GetById(p => p.ProdutoId == id)
 ;           _uof.ProductRepository.Delete(produto);
             _uof.Commit();
+            var ProdutoDto = _mapper.Map<ProdutosDTO>(produto);
 
-
-            return Ok(produto);
+            return Ok(ProdutoDto);
         }
     }
 }
