@@ -53,21 +53,21 @@ namespace Catalogo.Controllers
             var produtos = _uof.ProductRepository.GetProdutosPorCategoria(id);
             if (produtos is null) return BadRequest();
             //var destino = _mapper.Map<Destino>(origem)
-            var produtosDTO = _mapper.Map<IEnumerable<Produtos>>(produtos);
-            return Ok(produtosDTO);
+            var produtosDTO = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
+            return Ok(produtos);
         }
 
         /// <summary>
         /// retorna elemento pelo id
         /// </summary>
         //metodo que ira retornar pelo Id
-        [HttpGet("{id:int}", Name = "obterproduto")]
-        public ActionResult<Produtos> Get(int id)
+        [HttpGet("{id:int}", Name = "ProdutoporID")]
+        public ActionResult<ProdutosDTO> GetById(int id)
         {
             var produto = _uof.ProductRepository.GetById(p => p.ProdutoId == id);
             var produtoDto = _mapper.Map<ProdutosDTO>(produto);
 
-            return Ok(produto);
+            return Ok(produtoDto);
         }
 
         /// <summary>

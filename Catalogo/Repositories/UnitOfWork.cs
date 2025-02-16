@@ -30,7 +30,7 @@ namespace Catalogo.Repositories
         }
         public void Commit()
         {
-                
+            _context.SaveChanges();
         }
     }
 }

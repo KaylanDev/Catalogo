@@ -32,7 +32,7 @@ public class Produtos : IValidatableObject
     public float Estoque { get; set; }
     public DateTime DataCadastro { get; set; } = DateTime.Now;
   
-    public int CategoriaId { get; set; }
+    public int? CategoriaId { get; set; }
     [JsonIgnore]
     public Categorias?Categoria { get; set; }
 
