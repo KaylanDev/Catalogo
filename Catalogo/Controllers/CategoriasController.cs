@@ -1,14 +1,17 @@
-﻿using Azure.Core;
+﻿using AutoMapper;
+using Azure.Core;
 using Catalogo.Data;
 using Catalogo.DTOs;
 using Catalogo.DTOs.Mappins;
 using Catalogo.Filters;
 using Catalogo.Models;
+using Catalogo.Paginations;
 using Catalogo.Repositories;
 using Catalogo.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Reflection.Metadata.Ecma335;
 
@@ -19,14 +22,16 @@ namespace Catalogo.Controllers
     public class CategoriasController : ControllerBase
     {
         private readonly IUnitOfWork _uof;
+        private readonly IMapper _mapper;
+
 
         //variavel para usar o configuration
         //private readonly IConfiguration _configuration;
 
-        public CategoriasController(IUnitOfWork Iunit/*IConfiguration configuration*/)
+        public CategoriasController(IUnitOfWork Iunit,IMapper mapper)
         {
             _uof = Iunit;
-            /*_configuration = configuration;*/
+           _mapper = mapper;
         }
         /*
         ///<summary>
@@ -99,6 +104,35 @@ namespace Catalogo.Controllers
            
 
         }
+
+
+        [HttpGet("pagination")]
+        public ActionResult<IEnumerable<CategoriasDTO>> GetPagination([FromQuery] CategoriasParameters categoriasParameters)
+        {
+            var categorias = _uof.CategoriaRepository.GetPagination(categoriasParameters);
+
+            return ObterCategoria(categorias);
+        }
+
+        private ActionResult<IEnumerable<CategoriasDTO>> ObterCategoria(PagedList<Categorias> categorias)
+        {
+            var metadados = new
+            {
+
+                categorias.TotalCount,
+                categorias.PageSize,
+                categorias.CurrentPage,
+                categorias.TotalPage,
+                categorias.HasNext,
+                categorias.HasPrevious
+            };
+
+            Response.Headers.Append("X-OLHAAAAA", JsonConvert.SerializeObject(metadados));
+
+            var categoriasDto = _mapper.Map<IEnumerable<CategoriasDTO>>(categorias);
+            return Ok(categoriasDto);
+        }
+
 
         /// <summary>
         /// adciona um novo elemento
