@@ -24,5 +24,6 @@ namespace Catalogo.DTOs
         [Required]
         [StringLength(300, MinimumLength = 3, ErrorMessage = "A imagem precisa ter entre {1} e {2} caracteres!")]
         public string? ImagemUrl { get; set; }
+        public int? CategoriaId { get; set; }
     }
 }
