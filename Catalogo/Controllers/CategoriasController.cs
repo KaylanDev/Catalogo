@@ -114,6 +114,13 @@ namespace Catalogo.Controllers
             return ObterCategoria(categorias);
         }
 
+        [HttpGet("Categorias/Filtro")]
+        public ActionResult<IEnumerable<CategoriasDTO>> GetFiltro([FromQuery] CategoriasFiltroNome categoriasFiltroNome)
+        {
+            var categoraias = _uof.CategoriaRepository.GetFiltroNome(categoriasFiltroNome);
+            return ObterCategoria(categoraias);
+        }
+
         private ActionResult<IEnumerable<CategoriasDTO>> ObterCategoria(PagedList<Categorias> categorias)
         {
             var metadados = new

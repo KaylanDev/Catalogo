@@ -33,7 +33,7 @@ namespace Catalogo.Logging
 
         private void EscreverTextoNoArquivo(string message)
         {
-            string caminhoArquivoLog = @"C:\Users\kaylan\source\Log\Log.txt";
+            string caminhoArquivoLog = @"D:\NVME\Visual Studio\Log\Log.txt";
 
             using (StreamWriter sw = new StreamWriter(caminhoArquivoLog, true))
             {

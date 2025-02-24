@@ -21,7 +21,22 @@ namespace Catalogo.Repositories
 
         public PagedList<Categorias> GetFiltroNome(CategoriasFiltroNome categoriasFiltroNome)
         {
-            var categorias
+            var categorias = GetAll().AsQueryable();    
+
+            if (!String.IsNullOrEmpty(categoriasFiltroNome.Nome))
+            {
+                categorias = categorias.Where(c => c.Nome.ToLower().Contains(categoriasFiltroNome.Nome.ToLower()));
+            }
+
+            if (categorias is null)
+            {
+
+            }
+
+            var categoriaFiltradas = PagedList<Categorias>.TopagedList(categorias,categoriasFiltroNome.PageNumber,categoriasFiltroNome.PageSize);
+
+            return categoriaFiltradas;
+
         }
 
         public PagedList<Categorias> GetPagination(CategoriasParameters CategoriasParameters)
