@@ -7,8 +7,8 @@ public interface ICategoriaRepository : IRepositoy<Categorias>
 {
   
     IEnumerable<Categorias> GetCategoriasProdutos();
-    public PagedList<Categorias> GetPagination(CategoriasParameters CategoriasParameters);
-    public PagedList<Categorias> GetFiltroNome(CategoriasFiltroNome categoriasFiltroNome);
+    public Task<PagedList<Categorias>> GetPagination(CategoriasParameters CategoriasParameters);
+    public Task<PagedList<Categorias>> GetFiltroNome(CategoriasFiltroNome categoriasFiltroNome);
 
 
 }

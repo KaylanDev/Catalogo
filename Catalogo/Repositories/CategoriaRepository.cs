@@ -19,13 +19,14 @@ namespace Catalogo.Repositories
             return _context.Categorias.Include(p => p.Produtos).Where(p => p.CategoriaId < 10).ToList();
         }
 
-        public PagedList<Categorias> GetFiltroNome(CategoriasFiltroNome categoriasFiltroNome)
+        public async Task<PagedList<Categorias>> GetFiltroNome(CategoriasFiltroNome categoriasFiltroNome)
         {
-            var categorias = GetAll().AsQueryable();    
+            var categorias = await GetAllAsync();
+            var categoriasOrdenadas = categorias.OrderBy(c => c.CategoriaId).AsQueryable();
 
             if (!String.IsNullOrEmpty(categoriasFiltroNome.Nome))
             {
-                categorias = categorias.Where(c => c.Nome.ToLower().Contains(categoriasFiltroNome.Nome.ToLower()));
+                categoriasOrdenadas = categoriasOrdenadas.Where(c => c.Nome.ToLower().Contains(categoriasFiltroNome.Nome.ToLower()));
             }
 
             if (categorias is null)
@@ -33,16 +34,17 @@ namespace Catalogo.Repositories
 
             }
 
-            var categoriaFiltradas = PagedList<Categorias>.TopagedList(categorias,categoriasFiltroNome.PageNumber,categoriasFiltroNome.PageSize);
+            var categoriaFiltradas = PagedList<Categorias>.TopagedList(categoriasOrdenadas,categoriasFiltroNome.PageNumber,categoriasFiltroNome.PageSize);
 
             return categoriaFiltradas;
 
         }
 
-        public PagedList<Categorias> GetPagination(CategoriasParameters CategoriasParameters)
+        public async Task<PagedList<Categorias>> GetPagination(CategoriasParameters CategoriasParameters)
         {
-            var categorias = _context.Categorias.OrderBy(c => c.CategoriaId).AsQueryable();
-            var categoraisOrganizadas = PagedList<Categorias>.TopagedList(categorias,CategoriasParameters.PageNumber,CategoriasParameters.PageSize);
+            var categorias = await _context.Categorias.ToListAsync();
+            var categoriasOrdenadas = categorias.OrderBy(c => c.CategoriaId).AsQueryable();
+            var categoraisOrganizadas = PagedList<Categorias>.TopagedList(categoriasOrdenadas,CategoriasParameters.PageNumber,CategoriasParameters.PageSize);
             return categoraisOrganizadas;
 
         }

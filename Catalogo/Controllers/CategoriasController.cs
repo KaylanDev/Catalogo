@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Reflection.Metadata.Ecma335;
+using System.Threading.Tasks;
 
 namespace Catalogo.Controllers
 {
@@ -66,9 +67,9 @@ namespace Catalogo.Controllers
         /// </summary>
 
         [HttpGet]
-        public ActionResult<IEnumerable<CategoriasDTO>> Get()
+        public async Task<ActionResult<IEnumerable<CategoriasDTO>>> Get()
         {
-            var categorias = _uof.CategoriaRepository.GetAll();
+            var categorias = await _uof.CategoriaRepository.GetAllAsync();
             return Ok(categorias);
            
         }
@@ -78,9 +79,9 @@ namespace Catalogo.Controllers
         /// </summary>
         //metodo que ira retornar pelo Id
         [HttpGet("{id:int}", Name = "categoria")]
-        public ActionResult Get(int id)
+        public async Task<ActionResult> Get(int id)
         {
-            var categoria = _uof.CategoriaRepository.GetById(c => c.CategoriaId == id);
+            var categoria = await _uof.CategoriaRepository.GetByIdAsync(c => c.CategoriaId == id);
 
             if (categoria is null)
             {
@@ -107,17 +108,17 @@ namespace Catalogo.Controllers
 
 
         [HttpGet("pagination")]
-        public ActionResult<IEnumerable<CategoriasDTO>> GetPagination([FromQuery] CategoriasParameters categoriasParameters)
+        public async Task<ActionResult<IEnumerable<CategoriasDTO>>> GetPagination([FromQuery] CategoriasParameters categoriasParameters)
         {
-            var categorias = _uof.CategoriaRepository.GetPagination(categoriasParameters);
+            var categorias = await _uof.CategoriaRepository.GetPagination(categoriasParameters);
 
             return ObterCategoria(categorias);
         }
 
         [HttpGet("Categorias/Filtro")]
-        public ActionResult<IEnumerable<CategoriasDTO>> GetFiltro([FromQuery] CategoriasFiltroNome categoriasFiltroNome)
+        public async Task<ActionResult<IEnumerable<CategoriasDTO>>> GetFiltro([FromQuery] CategoriasFiltroNome categoriasFiltroNome)
         {
-            var categoraias = _uof.CategoriaRepository.GetFiltroNome(categoriasFiltroNome);
+            var categoraias = await _uof.CategoriaRepository.GetFiltroNome(categoriasFiltroNome);
             return ObterCategoria(categoraias);
         }
 
@@ -188,9 +189,9 @@ namespace Catalogo.Controllers
         /// Deleta o elemento selecionado
         /// </summary>
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> DeleteAsync(int id)
         {
-            var categoria = _uof.CategoriaRepository.GetById(c => c.CategoriaId == id);
+            var categoria = await _uof.CategoriaRepository.GetByIdAsync(c => c.CategoriaId == id);
             if (categoria is null)
             {
                 return NotFound("produto n encontrado");
