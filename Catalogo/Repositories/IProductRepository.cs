@@ -7,9 +7,9 @@ namespace Catalogo.Repositories
     public interface IProductRepository : IRepositoy<Produtos>
     {
 
-        public IEnumerable<Produtos> GetProdutosPorCategoria(int id);
-        public PagedList<Produtos> GetPagination(ProdutosParameters produtosParameters);
-        public PagedList<Produtos> GetProdutosFiltro(ProdutosFiltroPrecos produtosFiltroPrecos);
+        public  Task<IEnumerable<Produtos>> GetProdutosPorCategoria(int id);
+        public  Task<PagedList<Produtos>> GetPagination(ProdutosParameters produtosParameters);
+        public  Task<PagedList<Produtos>> GetProdutosFiltro(ProdutosFiltroPrecos produtosFiltroPrecos);
 
         
     }

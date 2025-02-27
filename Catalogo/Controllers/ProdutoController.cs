@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using JsonConverter = Newtonsoft.Json.JsonConverter;
 
 
@@ -46,19 +47,19 @@ namespace Catalogo.Controllers
         /// Retorna os itens.
         /// </summary>
         [HttpGet]
-        public ActionResult<IEnumerable<ProdutosDTO>> Get()
+        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> Get()
         {
 
-            var produtos = _uof.ProductRepository.GetAll().ToList();
+            var produtos = await _uof.ProductRepository.GetAllAsync();
             var produtosDto = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
 
             return Ok(produtosDto);
 
         }
         [HttpGet("produtosCategoria/{id}")]
-        public ActionResult<IEnumerable<ProdutosDTO>> GetProdutosCategoria(int id)
+        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetProdutosCategoria(int id)
         {
-            var produtos = _uof.ProductRepository.GetProdutosPorCategoria(id);
+            var produtos = await _uof.ProductRepository.GetProdutosPorCategoria(id);
             if (produtos is null) return BadRequest();
             //var destino = _mapper.Map<Destino>(origem)
             var produtosDTO = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
@@ -73,22 +74,22 @@ namespace Catalogo.Controllers
         public ActionResult<ProdutosDTO> GetById(int id)
 
         {
-            var produto = _uof.ProductRepository.GetById(p => p.ProdutoId == id);
+            var produto = _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id);
             var produtoDto = _mapper.Map<ProdutosDTO>(produto);
 
             return Ok(produtoDto);
         }
 
         [HttpGet("paramans")]
-        public ActionResult<IEnumerable<ProdutosDTO>> GetParamns([FromQuery]ProdutosParameters produtosParameters)
+        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetParamns([FromQuery]ProdutosParameters produtosParameters)
         {
-            var produtos = _uof.ProductRepository.GetPagination(produtosParameters);
+            var produtos =await _uof.ProductRepository.GetPagination(produtosParameters);
             return ObterProduto(produtos);
         }
         [HttpGet("Produtos/Filtros")]
-        public ActionResult<IEnumerable<ProdutosDTO>> GetFiltro([FromQuery] ProdutosFiltroPrecos produtosFiltroPrecos)
+        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetFiltro([FromQuery] ProdutosFiltroPrecos produtosFiltroPrecos)
         {
-            var produtos = _uof.ProductRepository.GetProdutosFiltro(produtosFiltroPrecos);
+            var produtos = await _uof.ProductRepository.GetProdutosFiltro(produtosFiltroPrecos);
             return ObterProduto(produtos);
         }
 
@@ -111,11 +112,11 @@ namespace Catalogo.Controllers
         }
 
         [HttpPatch("{id:int}/UpdatePartial")]
-        public ActionResult<ProdutoDTOUpdateResponse> Patch(int id,JsonPatchDocument<ProdutoDTOUpdateRequest> patchProdutoDto)
+        public async Task<ActionResult<ProdutoDTOUpdateResponse>> Patch(int id,JsonPatchDocument<ProdutoDTOUpdateRequest> patchProdutoDto)
         {
             if (patchProdutoDto is null || id == 0) return BadRequest();
 
-            var produto = _uof.ProductRepository.GetById(c => c.ProdutoId == id);
+            var produto = await _uof.ProductRepository.GetByIdAsync(c => c.ProdutoId == id);
 
             if (produto is null)
             {
@@ -180,9 +181,9 @@ namespace Catalogo.Controllers
         /// Deleta o elemento selecionado
         /// </summary>
         [HttpDelete("{id:int}")]
-        public ActionResult<ProdutosDTO> Delete(int id)
+        public async Task<ActionResult<ProdutosDTO>> Delete(int id)
         {
-            var produto = _uof.ProductRepository.GetById(p => p.ProdutoId == id)
+            var produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id)
 ;           _uof.ProductRepository.Delete(produto);
             _uof.Commit();
             var ProdutoDto = _mapper.Map<ProdutosDTO>(produto);
