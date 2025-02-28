@@ -1,5 +1,6 @@
 ﻿using Catalogo.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace Catalogo.Repositories
 {
@@ -28,9 +29,9 @@ namespace Catalogo.Repositories
         {
             _context = context;
         }
-        public void Commit()
+        public async Task Commit()
         {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

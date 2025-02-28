@@ -71,10 +71,10 @@ namespace Catalogo.Controllers
         /// </summary>
         /// 
         [HttpGet("{id:int}", Name = "ProdutoporID")]
-        public ActionResult<ProdutosDTO> GetById(int id)
+        public async Task<ActionResult<ProdutosDTO>> GetById(int id)
 
         {
-            var produto = _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id);
+            var produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id);
             var produtoDto = _mapper.Map<ProdutosDTO>(produto);
 
             return Ok(produtoDto);
@@ -140,7 +140,7 @@ namespace Catalogo.Controllers
         /// <returns></returns>
 
         [HttpPost]
-        public ActionResult<ProdutosDTO> Post(ProdutosDTO produtoDto)
+        public async Task<ActionResult<ProdutosDTO>> Post(ProdutosDTO produtoDto)
         {
             if (produtoDto is null)
             {
@@ -149,7 +149,7 @@ namespace Catalogo.Controllers
 
             var produto = _mapper.Map<Produtos>(produtoDto); 
             _uof.ProductRepository.Create(produto);
-            _uof.Commit();
+           await _uof.Commit();
             var produtoDTo = _mapper.Map<ProdutosDTO>(produto);
             return new CreatedAtRouteResult("ProdutoporID",
                 new { Id = produtoDTo.ProdutoId }, produtoDTo);
@@ -160,7 +160,7 @@ namespace Catalogo.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id:int}")]
-        public ActionResult<ProdutosDTO> Put(int id, ProdutosDTO produtoDto)
+        public async Task<ActionResult<ProdutosDTO>> Put(int id, ProdutosDTO produtoDto)
         {
             if (id != produtoDto.ProdutoId)
             {
@@ -172,7 +172,7 @@ namespace Catalogo.Controllers
             }
             var produto = _mapper.Map<Produtos>(produtoDto);
               _uof.ProductRepository.Update(produto);
-            _uof.Commit();
+          await  _uof.Commit();
             var produtoAttDto = _mapper.Map<ProdutosDTO>(produto);
             return Ok(produtoDto);
         }
@@ -185,7 +185,7 @@ namespace Catalogo.Controllers
         {
             var produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id)
 ;           _uof.ProductRepository.Delete(produto);
-            _uof.Commit();
+          await  _uof.Commit();
             var ProdutoDto = _mapper.Map<ProdutosDTO>(produto);
 
             return Ok(ProdutoDto);

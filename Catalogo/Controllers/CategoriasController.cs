@@ -70,7 +70,8 @@ namespace Catalogo.Controllers
         public async Task<ActionResult<IEnumerable<CategoriasDTO>>> Get()
         {
             var categorias = await _uof.CategoriaRepository.GetAllAsync();
-            return Ok(categorias);
+            var categoriasDto = _mapper.Map<IEnumerable<CategoriasDTO>>(categorias);
+            return Ok(categoriasDto);
            
         }
 
@@ -98,10 +99,11 @@ namespace Catalogo.Controllers
         //metodo que ira retornar produtos relacionados
         [HttpGet]
         [Route("produtos")]
-        public ActionResult<IEnumerable<Categorias>> GetCategoriaProdutos()
+        public async Task<ActionResult<IEnumerable<CategoriasProdutosDTO>>> GetCategoriaProdutos()
         {
-            var categoriasProd = _uof.CategoriaRepository.GetCategoriasProdutos();
-            return Ok(categoriasProd);
+            var categoriasProd = await _uof.CategoriaRepository.GetCategoriasProdutosAsync();
+            var categoriasDto = _mapper.Map<IEnumerable<CategoriasProdutosDTO>>(categoriasProd);
+            return Ok(categoriasDto);
            
 
         }
@@ -110,7 +112,7 @@ namespace Catalogo.Controllers
         [HttpGet("pagination")]
         public async Task<ActionResult<IEnumerable<CategoriasDTO>>> GetPagination([FromQuery] CategoriasParameters categoriasParameters)
         {
-            var categorias = await _uof.CategoriaRepository.GetPagination(categoriasParameters);
+            var categorias = await _uof.CategoriaRepository.GetPaginationAsync(categoriasParameters);
 
             return ObterCategoria(categorias);
         }
@@ -118,7 +120,7 @@ namespace Catalogo.Controllers
         [HttpGet("Categorias/Filtro")]
         public async Task<ActionResult<IEnumerable<CategoriasDTO>>> GetFiltro([FromQuery] CategoriasFiltroNome categoriasFiltroNome)
         {
-            var categoraias = await _uof.CategoriaRepository.GetFiltroNome(categoriasFiltroNome);
+            var categoraias = await _uof.CategoriaRepository.GetFiltroNomeAsync(categoriasFiltroNome);
             return ObterCategoria(categoraias);
         }
 
@@ -147,7 +149,7 @@ namespace Catalogo.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult<Categorias> post(Categorias categoria)
+        public async Task<ActionResult<Categorias>> post(Categorias categoria)
         {
 
             if (categoria is null)
@@ -156,7 +158,7 @@ namespace Catalogo.Controllers
             }
 
             var categoriaCriada = _uof.CategoriaRepository.Create(categoria);
-            _uof.Commit();
+           await _uof.Commit();
 
 
             return new CreatedAtRouteResult("categoria", new { id = categoriaCriada.CategoriaId }, categoriaCriada);
@@ -170,7 +172,7 @@ namespace Catalogo.Controllers
         /// <returns></returns>
 
         [HttpPut("{id:int}")]
-        public ActionResult<Categorias> Put(int id, Categorias categoria)
+        public async Task<ActionResult<Categorias>> Put(int id, Categorias categoria)
         {
 
             if (id != categoria.CategoriaId)
@@ -178,7 +180,7 @@ namespace Catalogo.Controllers
                 return BadRequest("Dados invalidos...");
             }
             var categoriaAtt = _uof.CategoriaRepository.Update(categoria);
-            _uof.Commit();
+          await   _uof.Commit();
 
             return Ok(categoriaAtt);
 
@@ -201,7 +203,7 @@ namespace Catalogo.Controllers
             {
                 return BadRequest("Falha ao deletar categoria");
             }
-            _uof.Commit();
+           await _uof.Commit();
             return Ok(categoriaDelet);
 
 

@@ -2,6 +2,7 @@
 using Catalogo.Data;
 using Catalogo.Models;
 using Catalogo.Paginations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Catalogo.Repositories
 {
@@ -16,8 +17,8 @@ namespace Catalogo.Repositories
 
         public async Task<PagedList<Produtos>> GetPagination(ProdutosParameters produtosParameters)
         {
-            var produtos =  _context.Produtos.OrderBy(c => c.ProdutoId).AsQueryable();
-            var produtosOrdenados = PagedList<Produtos>.TopagedList(produtos, produtosParameters.PageNumber, produtosParameters.PageSize);
+            var produtos = await _context.Produtos.ToListAsync();
+            var produtosOrdenados = PagedList<Produtos>.TopagedList(produtos.OrderBy(c => c.ProdutoId).AsQueryable(), produtosParameters.PageNumber, produtosParameters.PageSize);
             return produtosOrdenados;
         }
 

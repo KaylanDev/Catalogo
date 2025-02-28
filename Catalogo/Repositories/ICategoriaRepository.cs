@@ -6,9 +6,9 @@ namespace Catalogo.Repositories;
 public interface ICategoriaRepository : IRepositoy<Categorias>
 {
   
-    IEnumerable<Categorias> GetCategoriasProdutos();
-    public Task<PagedList<Categorias>> GetPagination(CategoriasParameters CategoriasParameters);
-    public Task<PagedList<Categorias>> GetFiltroNome(CategoriasFiltroNome categoriasFiltroNome);
+   Task< IEnumerable<Categorias>> GetCategoriasProdutosAsync();
+    public Task<PagedList<Categorias>> GetPaginationAsync(CategoriasParameters CategoriasParameters);
+    public Task<PagedList<Categorias>> GetFiltroNomeAsync(CategoriasFiltroNome categoriasFiltroNome);
 
 
 }
