@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using System.Threading.Tasks;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace Catalogo.Repositories
 {
@@ -20,7 +22,7 @@ namespace Catalogo.Repositories
             return await _context.Categorias.Include(p => p.Produtos).Where(p => p.CategoriaId < 10).ToListAsync();
         }
 
-        public async Task<PagedList<Categorias>> GetFiltroNomeAsync(CategoriasFiltroNome categoriasFiltroNome)
+        public async Task<IPagedList<Categorias>> GetFiltroNomeAsync(CategoriasFiltroNome categoriasFiltroNome)
         {
             var categorias = await GetAllAsync();
             var categoriasOrdenadas = categorias.OrderBy(c => c.CategoriaId).AsQueryable();
@@ -30,23 +32,18 @@ namespace Catalogo.Repositories
                 categoriasOrdenadas = categoriasOrdenadas.Where(c => c.Nome.ToLower().Contains(categoriasFiltroNome.Nome.ToLower()));
             }
 
-            if (categorias is null)
-            {
-
-            }
-
-            var categoriaFiltradas = PagedList<Categorias>.TopagedList(categoriasOrdenadas,categoriasFiltroNome.PageNumber,categoriasFiltroNome.PageSize);
-
-            return categoriaFiltradas;
+             var categoriasFiltradas =   categoriasOrdenadas.ToPagedList(categoriasFiltroNome.PageNumber,categoriasFiltroNome.PageSize);
+            return categoriasFiltradas;
 
         }
 
-        public async Task<PagedList<Categorias>> GetPaginationAsync(CategoriasParameters CategoriasParameters)
+        public async Task<IPagedList<Categorias>> GetPaginationAsync(CategoriasParameters CategoriasParameters)
         {
             var categorias = await _context.Categorias.ToListAsync();
             var categoriasOrdenadas = categorias.OrderBy(c => c.CategoriaId).AsQueryable();
-            var categoraisOrganizadas = PagedList<Categorias>.TopagedList(categoriasOrdenadas,CategoriasParameters.PageNumber,CategoriasParameters.PageSize);
-            return categoraisOrganizadas;
+
+            return categoriasOrdenadas.ToPagedList(CategoriasParameters.PageNumber, CategoriasParameters.PageSize);
+
 
         }
     }

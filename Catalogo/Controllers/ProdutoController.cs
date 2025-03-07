@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using X.PagedList;
 using JsonConverter = Newtonsoft.Json.JsonConverter;
 
 
@@ -93,16 +94,16 @@ namespace Catalogo.Controllers
             return ObterProduto(produtos);
         }
 
-        private ActionResult<IEnumerable<ProdutosDTO>> ObterProduto(PagedList<Produtos> produtos)
+        private ActionResult<IEnumerable<ProdutosDTO>> ObterProduto(IPagedList<Produtos> produtos)
         {
             var metaDados = new
             {
-                produtos.TotalCount,
+                produtos.Count,
                 produtos.PageSize,
-                produtos.CurrentPage,
-                produtos.TotalPage,
-                produtos.HasNext,
-                produtos.HasPrevious
+                produtos.PageNumber,
+                produtos.TotalItemCount,
+                produtos.HasNextPage,
+                produtos.HasPreviousPage
             };
 
             Response.Headers.Append("X-Append", JsonConvert.SerializeObject(metaDados));

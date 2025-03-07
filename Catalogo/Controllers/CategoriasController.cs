@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System.Collections;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace Catalogo.Controllers
 {
@@ -124,17 +125,17 @@ namespace Catalogo.Controllers
             return ObterCategoria(categoraias);
         }
 
-        private ActionResult<IEnumerable<CategoriasDTO>> ObterCategoria(PagedList<Categorias> categorias)
+        private ActionResult<IEnumerable<CategoriasDTO>> ObterCategoria(IPagedList<Categorias> categorias)
         {
             var metadados = new
             {
 
-                categorias.TotalCount,
+                categorias.Count,
                 categorias.PageSize,
-                categorias.CurrentPage,
-                categorias.TotalPage,
-                categorias.HasNext,
-                categorias.HasPrevious
+                categorias.LastItemOnPage,
+                categorias.TotalItemCount,
+                categorias.HasNextPage,
+                categorias.HasPreviousPage
             };
 
             Response.Headers.Append("X-OLHAAAAA", JsonConvert.SerializeObject(metadados));

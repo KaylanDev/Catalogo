@@ -1,6 +1,7 @@
 ﻿using Catalogo.Models;
 using Catalogo.Paginations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using X.PagedList;
 
 namespace Catalogo.Repositories
 {
@@ -8,8 +9,8 @@ namespace Catalogo.Repositories
     {
 
         public  Task<IEnumerable<Produtos>> GetProdutosPorCategoria(int id);
-        public  Task<PagedList<Produtos>> GetPagination(ProdutosParameters produtosParameters);
-        public  Task<PagedList<Produtos>> GetProdutosFiltro(ProdutosFiltroPrecos produtosFiltroPrecos);
+        public  Task<IPagedList<Produtos>> GetPagination(ProdutosParameters produtosParameters);
+        public  Task<IPagedList<Produtos>> GetProdutosFiltro(ProdutosFiltroPrecos produtosFiltroPrecos);
 
         
     }

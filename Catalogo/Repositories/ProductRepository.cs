@@ -3,6 +3,8 @@ using Catalogo.Data;
 using Catalogo.Models;
 using Catalogo.Paginations;
 using Microsoft.EntityFrameworkCore;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace Catalogo.Repositories
 {
@@ -15,14 +17,14 @@ namespace Catalogo.Repositories
 
         }
 
-        public async Task<PagedList<Produtos>> GetPagination(ProdutosParameters produtosParameters)
+        public async Task<IPagedList<Produtos>> GetPagination(ProdutosParameters produtosParameters)
         {
             var produtos = await _context.Produtos.ToListAsync();
-            var produtosOrdenados = PagedList<Produtos>.TopagedList(produtos.OrderBy(c => c.ProdutoId).AsQueryable(), produtosParameters.PageNumber, produtosParameters.PageSize);
-            return produtosOrdenados;
+            
+            return produtos.ToPagedList(produtosParameters.PageNumber, produtosParameters.PageSize);
         }
 
-        public async Task<PagedList<Produtos>> GetProdutosFiltro(ProdutosFiltroPrecos produtosFiltroPrecos)
+        public async Task<IPagedList<Produtos>> GetProdutosFiltro(ProdutosFiltroPrecos produtosFiltroPrecos)
         {
             var produtos = await GetAllAsync();
             var produtosAll = produtos.AsQueryable();
@@ -45,9 +47,8 @@ namespace Catalogo.Repositories
 
             }
 
-            var produtosFiltrados = PagedList<Produtos>.TopagedList(produtosAll, produtosFiltroPrecos.PageNumber, produtosFiltroPrecos.PageSize);
-
-            return produtosFiltrados;
+            return produtosAll.ToPagedList(produtosFiltroPrecos.PageNumber, produtosFiltroPrecos.PageSize);
+            
 
         }
 
