@@ -12,6 +12,7 @@ using Catalogo.Logging;
 using Catalogo.Filters;
 using Catalogo.Repositories;
 using Catalogo.DTOs.Mappins;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +64,15 @@ options.DisableImplicitFromServicesParameters = true
 var chave1 = builder.Configuration["chave1"];
 var chave2 = builder.Configuration["secao:chave2"];
 */
+
+//             autentificação bearer jwt
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication("Bearer").AddJwtBearer();
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().
+    AddEntityFrameworkStores<AppDbContext>().
+    AddDefaultTokenProviders();
+    
 string? mysqlconectio = builder.Configuration.GetConnectionString("Conexao");
 
 builder.Services.AddDbContext<AppDbContext>(options

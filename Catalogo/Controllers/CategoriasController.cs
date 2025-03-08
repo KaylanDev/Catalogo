@@ -8,6 +8,8 @@ using Catalogo.Models;
 using Catalogo.Paginations;
 using Catalogo.Repositories;
 using Catalogo.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
@@ -30,10 +32,10 @@ namespace Catalogo.Controllers
         //variavel para usar o configuration
         //private readonly IConfiguration _configuration;
 
-        public CategoriasController(IUnitOfWork Iunit,IMapper mapper)
+        public CategoriasController(IUnitOfWork Iunit, IMapper mapper)
         {
             _uof = Iunit;
-           _mapper = mapper;
+            _mapper = mapper;
         }
         /*
         ///<summary>
@@ -68,12 +70,13 @@ namespace Catalogo.Controllers
         /// </summary>
 
         [HttpGet]
+        
         public async Task<ActionResult<IEnumerable<CategoriasDTO>>> Get()
         {
             var categorias = await _uof.CategoriaRepository.GetAllAsync();
             var categoriasDto = _mapper.Map<IEnumerable<CategoriasDTO>>(categorias);
             return Ok(categoriasDto);
-           
+
         }
 
         /// <summary>
@@ -105,7 +108,7 @@ namespace Catalogo.Controllers
             var categoriasProd = await _uof.CategoriaRepository.GetCategoriasProdutosAsync();
             var categoriasDto = _mapper.Map<IEnumerable<CategoriasProdutosDTO>>(categoriasProd);
             return Ok(categoriasDto);
-           
+
 
         }
 
@@ -144,7 +147,27 @@ namespace Catalogo.Controllers
             return Ok(categoriasDto);
         }
 
+        [HttpPatch("{id:int}",Name = "PathEdtion")]
+        public async Task<ActionResult<CategoriasDTO>> Patch(JsonPatchDocument<CategoriasDTO> jsonPatch,int id)
+        {
+            var categoria = await _uof.CategoriaRepository.GetByIdAsync(c => c.CategoriaId == id);
 
+            if (categoria is null)return BadRequest();
+
+            var categoriaDto = _mapper.Map<CategoriasDTO>(categoria);
+            jsonPatch.ApplyTo(categoriaDto);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            _mapper.Map(categoriaDto,categoria);
+            _uof.CategoriaRepository.Update(categoria);
+            await _uof.Commit();
+
+            return Ok(categoriaDto);
+        }
         /// <summary>
         /// adciona um novo elemento
         /// </summary>

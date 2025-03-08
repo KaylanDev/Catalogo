@@ -1,9 +1,10 @@
 ﻿using Catalogo.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catalogo.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext :  IdentityDbContext
 {
     public AppDbContext(DbContextOptions options) : base(options)
     {

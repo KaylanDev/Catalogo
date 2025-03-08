@@ -131,7 +131,7 @@ namespace Catalogo.Controllers
 
             _mapper.Map(produtoUpdateRequest, produto);
             _uof.ProductRepository.Update(produto);
-            _uof.Commit();
+          await  _uof.Commit();
             return Ok(_mapper.Map<ProdutoDTOUpdateResponse>(produto));
         }
 
