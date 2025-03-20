@@ -18,6 +18,7 @@ using System.Collections;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using X.PagedList;
+using Microsoft.Extensions.Logging;
 
 namespace Catalogo.Controllers
 {
@@ -27,15 +28,17 @@ namespace Catalogo.Controllers
     {
         private readonly IUnitOfWork _uof;
         private readonly IMapper _mapper;
+        private readonly ILogger<CategoriasController> _logger;
 
 
         //variavel para usar o configuration
         //private readonly IConfiguration _configuration;
 
-        public CategoriasController(IUnitOfWork Iunit, IMapper mapper)
+        public CategoriasController(IUnitOfWork Iunit, IMapper mapper, ILogger<CategoriasController> logger)
         {
             _uof = Iunit;
             _mapper = mapper;
+            _logger = logger;
         }
         /*
         ///<summary>
@@ -69,8 +72,28 @@ namespace Catalogo.Controllers
         /// Retorna os itens.
         /// </summary>
 
+
+        [HttpGet("public")]
+        public IActionResult PublicEndpoint()
+        {
+            return Ok("Endpoint público funcionando!");
+        }
+
+        [Authorize]
+        [HttpGet("protected")]
+        public IActionResult ProtectedEndpoint()
+        {
+            var user = HttpContext.User;
+            _logger.LogInformation("Usuário autenticado: {Identity}", user.Identity?.Name ?? "Não identificado");
+            _logger.LogInformation("Claims: {Claims}", string.Join(", ", user.Claims.Select(c => $"{c.Type}={c.Value}")));
+            return Ok("Endpoint protegido funcionando!");
+        }
+
+
+
+
         [HttpGet]
-        
+        [Authorize]
         public async Task<ActionResult<IEnumerable<CategoriasDTO>>> Get()
         {
             var categorias = await _uof.CategoriaRepository.GetAllAsync();
@@ -103,6 +126,8 @@ namespace Catalogo.Controllers
         //metodo que ira retornar produtos relacionados
         [HttpGet]
         [Route("produtos")]
+        [Authorize]
+
         public async Task<ActionResult<IEnumerable<CategoriasProdutosDTO>>> GetCategoriaProdutos()
         {
             var categoriasProd = await _uof.CategoriaRepository.GetCategoriasProdutosAsync();
