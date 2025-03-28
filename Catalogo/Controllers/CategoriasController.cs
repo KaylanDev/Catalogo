@@ -73,27 +73,13 @@ namespace Catalogo.Controllers
         /// </summary>
 
 
-        [HttpGet("public")]
-        public IActionResult PublicEndpoint()
-        {
-            return Ok("Endpoint público funcionando!");
-        }
-
-        [Authorize]
-        [HttpGet("protected")]
-        public IActionResult ProtectedEndpoint()
-        {
-            var user = HttpContext.User;
-            _logger.LogInformation("Usuário autenticado: {Identity}", user.Identity?.Name ?? "Não identificado");
-            _logger.LogInformation("Claims: {Claims}", string.Join(", ", user.Claims.Select(c => $"{c.Type}={c.Value}")));
-            return Ok("Endpoint protegido funcionando!");
-        }
+      
 
 
 
 
         [HttpGet]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult<IEnumerable<CategoriasDTO>>> Get()
         {
             var categorias = await _uof.CategoriaRepository.GetAllAsync();
@@ -240,6 +226,7 @@ namespace Catalogo.Controllers
         /// Deleta o elemento selecionado
         /// </summary>
         [HttpDelete("{id:int}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult> DeleteAsync(int id)
         {
             var categoria = await _uof.CategoriaRepository.GetByIdAsync(c => c.CategoriaId == id);

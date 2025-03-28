@@ -22,6 +22,22 @@ using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var MyAllowSpecificOrigins = "_MinhaOrigemEspecifica";
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("https://apirequest.io");
+                      });
+});
+
+
+
+
+
 // Add services to the container.
 //remove o limitador de caracters retornado do json e adiciona um tratador de excecoes global com filtros
 builder.Services.AddControllers(options =>
@@ -72,14 +88,15 @@ builder.Services.AddTransient<IMeuService, MeuSevico>();
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 options.DisableImplicitFromServicesParameters = true
 );
-/*
- * testando o configuration para pegar valores no arquivo JSON
-var chave1 = builder.Configuration["chave1"];
-var chave2 = builder.Configuration["secao:chave2"];
-*/
+
+builder.Services.AddIdentity<AplicationUsers, IdentityRole>().
+    AddEntityFrameworkStores<AppDbContext>().
+    AddDefaultTokenProviders();
+
+
+
 
 //             autentificação bearer jwt
-builder.Services.AddAuthorization();
 var SecretKey = builder.Configuration["JWT:Secretkey"]?? throw new ArgumentNullException("secret key is invalid!");
 builder.Services.AddAuthentication(options =>
 {
@@ -102,9 +119,17 @@ builder.Services.AddAuthentication(options =>
     }; 
 });
 
-builder.Services.AddIdentity<AplicationUsers, IdentityRole>().
-    AddEntityFrameworkStores<AppDbContext>().
-    AddDefaultTokenProviders();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("SuperAdminOnly", policy => policy.RequireRole("Admin").RequireRole("id","Kaylan"));
+    options.AddPolicy("UserOnly",policy => policy.RequireRole("User"));
+    options.AddPolicy("ExclusivePolicyOnly",policy => 
+    policy.RequireAssertion(context => context.User.HasClaim(claim =>
+    claim.Type == "id" && claim.Value == "Kaylan"
+    || context.User.IsInRole("SuperAdmin")))
+    );
+});
 
 
 string? mysqlconectio = builder.Configuration.GetConnectionString("Conexao");
@@ -140,19 +165,18 @@ if (app.Environment.IsDevelopment())
 }
 
 
-var handler = new JwtSecurityTokenHandler();
-var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImtheWxhbiIsImVtYWlsIjoiS2F5bGFuLmFsZXhhbmRyZUBnYW1pbC5jb20iLCJqdGkiOiI5Y2RjMmViZi1iMmZjLTRjMzgtODZjNS1hMzYxMWY3NTU4ZmYiLCJuYmYiOjE3NDI0MzgxODEsImV4cCI6MTc0MjQzODM2MSwiaWF0IjoxNzQyNDM4MTgxLCJpc3MiOiJkb3RuZXQtdXNlci1qd3RzIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo1MjA1In0.1qOvpHbRRrSguiffotuSzlp-Kqa3HsL2kHJU12zl4DA";
-var jsonToken = handler.ReadJwtToken(token);
-Console.WriteLine(jsonToken);
-
-
 app.UseHttpsRedirection();
-
+app.UseRouting();
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthentication();
 
 app.UseAuthorization();
-
+app.UseEndpoints(options =>
+{
+    _ = options.MapGet("/Categorias", context =>
+    context.Response.WriteAsync("Ta ai boy"));
+});
 app.MapControllers();
 
 app.Run();

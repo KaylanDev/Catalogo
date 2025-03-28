@@ -7,6 +7,7 @@ using Catalogo.Migrations;
 using Catalogo.Models;
 using Catalogo.Paginations;
 using Catalogo.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
@@ -48,6 +49,7 @@ namespace Catalogo.Controllers
         /// Retorna os itens.
         /// </summary>
         [HttpGet]
+        [Authorize(Policy = "UserOnly")]
         public async Task<ActionResult<IEnumerable<ProdutosDTO>>> Get()
         {
 
