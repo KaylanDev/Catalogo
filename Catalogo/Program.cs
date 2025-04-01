@@ -22,15 +22,16 @@ using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var MyAllowSpecificOrigins = "_MinhaOrigemEspecifica";
+
 
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
+    options.AddDefaultPolicy(
                       policy =>
                       {
-                          policy.WithOrigins("https://apirequest.io");
+                          policy.AllowAnyOrigin().WithMethods("GET");
+                          
                       });
 });
 
@@ -136,11 +137,12 @@ string? mysqlconectio = builder.Configuration.GetConnectionString("Conexao");
 builder.Services.AddDbContext<AppDbContext>(options
     => options.UseMySql(mysqlconectio,
     ServerVersion.AutoDetect(mysqlconectio)));
-builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderConfig
+
+/*builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderConfig
 {
     LogLever = LogLevel.Information
 }));
-
+*/
 builder.Services.AddScoped<ApiLoggingFilters>();
 builder.Services.AddAutoMapper(typeof(ProdutosDTOMappingProfile));
 
@@ -167,16 +169,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
-app.UseEndpoints(options =>
-{
-    _ = options.MapGet("/Categorias", context =>
-    context.Response.WriteAsync("Ta ai boy"));
-});
+
+
+
+
 app.MapControllers();
 
 app.Run();

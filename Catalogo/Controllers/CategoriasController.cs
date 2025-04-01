@@ -19,6 +19,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using X.PagedList;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Cors;
 
 namespace Catalogo.Controllers
 {
@@ -80,6 +81,7 @@ namespace Catalogo.Controllers
 
         [HttpGet]
         //[Authorize]
+       
         public async Task<ActionResult<IEnumerable<CategoriasDTO>>> Get()
         {
             var categorias = await _uof.CategoriaRepository.GetAllAsync();
@@ -113,7 +115,6 @@ namespace Catalogo.Controllers
         [HttpGet]
         [Route("produtos")]
         [Authorize]
-
         public async Task<ActionResult<IEnumerable<CategoriasProdutosDTO>>> GetCategoriaProdutos()
         {
             var categoriasProd = await _uof.CategoriaRepository.GetCategoriasProdutosAsync();
@@ -183,7 +184,9 @@ namespace Catalogo.Controllers
         /// adciona um novo elemento
         /// </summary>
         /// <returns></returns>
+       
         [HttpPost]
+        [EnableCors("Policy")]
         public async Task<ActionResult<Categorias>> post(Categorias categoria)
         {
 
@@ -205,7 +208,6 @@ namespace Catalogo.Controllers
         /// altera a informação
         /// </summary>
         /// <returns></returns>
-
         [HttpPut("{id:int}")]
         public async Task<ActionResult<Categorias>> Put(int id, Categorias categoria)
         {
@@ -226,7 +228,7 @@ namespace Catalogo.Controllers
         /// Deleta o elemento selecionado
         /// </summary>
         [HttpDelete("{id:int}")]
-        [Authorize(Policy = "AdminOnly")]
+        //[Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult> DeleteAsync(int id)
         {
             var categoria = await _uof.CategoriaRepository.GetByIdAsync(c => c.CategoriaId == id);
