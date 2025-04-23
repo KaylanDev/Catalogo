@@ -19,6 +19,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Catalogo.Models;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,10 +33,9 @@ builder.Services.AddCors(options =>
                       policy =>
                       {
                           policy.AllowAnyOrigin().WithMethods("GET");
-                          
+
                       });
 });
-
 
 
 
@@ -46,24 +47,34 @@ builder.Services.AddControllers(options =>
     //options.Filters.Add(typeof(ApiExceptionFilter));
 }).AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 }).AddNewtonsoftJson(); // Adiciona suporte ao JsonPatchDocument<T>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Minha API", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Catalogo API",
+        Version = "v1",
+        Description = "API para gerenciamento de catálogo de produtos"
+    });
 
-    // Configuração da autenticação JWT no Swagger
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Insira o token JWT no campo abaixo. Exemplo: Bearer {seu_token}"
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -77,7 +88,7 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] { }
+            Array.Empty<string>()
         }
     });
 });
@@ -97,8 +108,8 @@ builder.Services.AddIdentity<AplicationUsers, IdentityRole>().
 
 
 
-//             autentificação bearer jwt
-var SecretKey = builder.Configuration["JWT:Secretkey"]?? throw new ArgumentNullException("secret key is invalid!");
+//                                                                                    Autentificação bearer jwt
+var SecretKey = builder.Configuration["JWT:Secretkey"] ?? throw new ArgumentNullException("secret key is invalid!");
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -117,19 +128,60 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["JWT:ValidAudience"],
         ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey))
-    }; 
+    };
 });
 
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("SuperAdminOnly", policy => policy.RequireRole("Admin").RequireRole("id","Kaylan"));
-    options.AddPolicy("UserOnly",policy => policy.RequireRole("User"));
-    options.AddPolicy("ExclusivePolicyOnly",policy => 
+    options.AddPolicy("SuperAdminOnly", policy => policy.RequireRole("Admin").RequireRole("id", "Kaylan"));
+    options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
+    options.AddPolicy("ExclusivePolicyOnly", policy =>
     policy.RequireAssertion(context => context.User.HasClaim(claim =>
     claim.Type == "id" && claim.Value == "Kaylan"
     || context.User.IsInRole("SuperAdmin")))
     );
+});
+
+//                                                                                      rate limiter global
+
+
+var myRateLimit = new MyRateLimitOptions();
+
+builder.Configuration.GetSection(MyRateLimitOptions.MyRateLimit).Bind(myRateLimit);
+
+
+builder.Services.AddRateLimiter(option =>
+{
+    option.AddFixedWindowLimiter(policyName: "FixedLimit", context =>
+    {
+        context.PermitLimit = myRateLimit.PermitLimit;
+        context.Window = TimeSpan.FromSeconds(myRateLimit.Window);
+        context.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        context.QueueLimit = myRateLimit.QueueLimit;
+    });
+    option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+}
+);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpcontext =>
+
+        RateLimitPartition.GetFixedWindowLimiter(partitionKey: httpcontext.User.Identity?.Name ??
+                                                                 httpcontext.Response.Headers.Host.ToString(),
+          factory: partition => new FixedWindowRateLimiterOptions
+          {
+              AutoReplenishment = myRateLimit.AutoReplenishment,
+              PermitLimit = myRateLimit.PermitLimit,
+              QueueLimit = myRateLimit.QueueLimit,
+              Window = TimeSpan.FromSeconds(myRateLimit.Window)
+          }));
+
+
+
+
 });
 
 
@@ -151,7 +203,7 @@ builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped(typeof(IRepositoy<>), typeof(Repository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<ITokenService,TokenService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Logging.AddConsole();
 
 var app = builder.Build();
@@ -168,7 +220,13 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
 app.UseRouting();
+
+app.UseRateLimiter();
+
 app.UseCors();
 
 app.UseAuthentication();

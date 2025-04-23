@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 using X.PagedList;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Cors;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
 namespace Catalogo.Controllers
 {
@@ -41,47 +43,30 @@ namespace Catalogo.Controllers
             _mapper = mapper;
             _logger = logger;
         }
-        /*
-        ///<summary>
-        ///testando o configuration
-        ///</summary>
-        [HttpGet("String")]
-        public string GetValores()
-        {
-            var chave1 = _configuration["chave1"];
-            return $"{chave1}";
-        }
-        */
-        //teste do get com from service
-        /*
-        [HttpGet("ComFromService/{nome}")]
-        public ActionResult<string> GetComFrom(string nome,[FromServices]IMeuService service)
-        {
-            return service.BemVindo(nome);
-        }
-
-        [HttpGet("SemFromService/{nome}")]
-        public ActionResult<string> GetSemFrom(string nome, IMeuService service)
-        {
-            return service.BemVindo(nome);
-        }
-          */
 
 
         //comentarios em xml
         /// <summary>
-        /// Retorna os itens.
+        /// Tabela de códigos de status e significados.
         /// </summary>
-
-
-      
-
-
-
+        /// <list type="table">
+        ///   <listheader>
+        ///     <term>Código</term>
+        ///     <description>Significado</description>
+        ///   </listheader>
+        ///   <item>
+        ///     <term>200</term>
+        ///     <description>Sucesso</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>404</term>
+        ///     <description>Não encontrado</description>
+        ///   </item>
+        /// </list>
 
         [HttpGet]
         //[Authorize]
-       
+
         public async Task<ActionResult<IEnumerable<CategoriasDTO>>> Get()
         {
             var categorias = await _uof.CategoriaRepository.GetAllAsync();
@@ -93,6 +78,13 @@ namespace Catalogo.Controllers
         /// <summary>
         /// retorna elemento pelo id
         /// </summary>
+        /// <remarks>
+        /// <list type="number">
+        /// <item>
+        /// <description>primeiro item </description>
+        ///</item>
+        ///</list>
+        ///</remarks>
         //metodo que ira retornar pelo Id
         [HttpGet("{id:int}", Name = "categoria")]
         public async Task<ActionResult> Get(int id)
@@ -109,12 +101,16 @@ namespace Catalogo.Controllers
         }
 
         /// <summary>
-        /// retorna elementos relacionados
+        /// Exemplo de método com uma lista na documentação.
         /// </summary>
-        //metodo que ira retornar produtos relacionados
+        /// <remarks>
+        /// Exemplo de request;
+
+        /// 
+        /// </remarks>
         [HttpGet]
         [Route("produtos")]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult<IEnumerable<CategoriasProdutosDTO>>> GetCategoriaProdutos()
         {
             var categoriasProd = await _uof.CategoriaRepository.GetCategoriasProdutosAsync();
@@ -158,13 +154,29 @@ namespace Catalogo.Controllers
             var categoriasDto = _mapper.Map<IEnumerable<CategoriasDTO>>(categorias);
             return Ok(categoriasDto);
         }
-
-        [HttpPatch("{id:int}",Name = "PathEdtion")]
-        public async Task<ActionResult<CategoriasDTO>> Patch(JsonPatchDocument<CategoriasDTO> jsonPatch,int id)
+        /// <summary>
+        /// Altera um elemento
+        /// </summary>
+        /// <param name="jsonPatch">teste.</param>
+        /// <param name="id"> poe o id ai verme.</param>
+        /// <remarks>>
+        /// <para>
+        /// [
+        /// {
+        /// "path": "string",
+        /// "op": "string",
+        /// "value": "string"
+        /// }
+        ///]
+        /// </para>
+        /// </remarks>>
+        /// <returns>ola</returns>
+        [HttpPatch("{id:int}", Name = "PathEdtion")]
+        public async Task<ActionResult<CategoriasDTO>> Patch(JsonPatchDocument<CategoriasDTO> jsonPatch, int id)
         {
             var categoria = await _uof.CategoriaRepository.GetByIdAsync(c => c.CategoriaId == id);
 
-            if (categoria is null)return BadRequest();
+            if (categoria is null) return BadRequest();
 
             var categoriaDto = _mapper.Map<CategoriasDTO>(categoria);
             jsonPatch.ApplyTo(categoriaDto);
@@ -174,17 +186,47 @@ namespace Catalogo.Controllers
                 return BadRequest();
             }
 
-            _mapper.Map(categoriaDto,categoria);
+            _mapper.Map(categoriaDto, categoria);
             _uof.CategoriaRepository.Update(categoria);
             await _uof.Commit();
 
             return Ok(categoriaDto);
         }
+
+
+
+
         /// <summary>
-        /// adciona um novo elemento
+        /// The main <c>Math</c> class.
+        /// Contains all methods for performing basic math functions.
+        /// <list type="bullet">
+        /// <item>
+        /// <term>Add</term>
+        /// <description>Addition Operation</description>
+        /// </item>
+        /// <item>
+        /// <term>Subtract</term>
+        /// <description>Subtraction Operation</description>
+        /// </item>
+        /// <item>
+        /// <term>Multiply</term>
+        /// <description>Multiplication Operation</description>
+        /// </item>
+        /// <item>
+        /// <term>Divide</term>
+        /// <description>Division Operation</description>
+        /// </item>
+        /// </list>
         /// </summary>
-        /// <returns></returns>
-       
+        /// <remarks>
+        /// <para>
+        /// This class can add, subtract, multiply and divide.
+        /// </para>
+        /// <para>
+        /// These operations can be performed on both
+        /// integers and doubles.
+        /// </para>
+        /// </remarks>
         [HttpPost]
         [EnableCors("Policy")]
         public async Task<ActionResult<Categorias>> post(Categorias categoria)
@@ -196,7 +238,7 @@ namespace Catalogo.Controllers
             }
 
             var categoriaCriada = _uof.CategoriaRepository.Create(categoria);
-           await _uof.Commit();
+            await _uof.Commit();
 
 
             return new CreatedAtRouteResult("categoria", new { id = categoriaCriada.CategoriaId }, categoriaCriada);
@@ -217,7 +259,7 @@ namespace Catalogo.Controllers
                 return BadRequest("Dados invalidos...");
             }
             var categoriaAtt = _uof.CategoriaRepository.Update(categoria);
-          await   _uof.Commit();
+            await _uof.Commit();
 
             return Ok(categoriaAtt);
 
@@ -241,7 +283,7 @@ namespace Catalogo.Controllers
             {
                 return BadRequest("Falha ao deletar categoria");
             }
-           await _uof.Commit();
+            await _uof.Commit();
             return Ok(categoriaDelet);
 
 

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Converters;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Diagnostics;
@@ -27,7 +28,7 @@ namespace Catalogo.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-
+    [EnableRateLimiting("FixedLimit")]
     public class ProdutoController : ControllerBase
     {
         private readonly IUnitOfWork _uof;
@@ -49,7 +50,7 @@ namespace Catalogo.Controllers
         /// Retorna os itens.
         /// </summary>
         [HttpGet]
-        [Authorize(Policy = "UserOnly")]
+        //[Authorize(Policy = "UserOnly")]
         public async Task<ActionResult<IEnumerable<ProdutosDTO>>> Get()
         {
 
@@ -59,6 +60,8 @@ namespace Catalogo.Controllers
             return Ok(produtosDto);
 
         }
+
+        
         [HttpGet("produtosCategoria/{id}")]
         public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetProdutosCategoria(int id)
         {
