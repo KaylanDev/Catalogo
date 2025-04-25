@@ -29,18 +29,17 @@ namespace Catalogo.Controllers
     [ApiController]
     [Route("[controller]")]
     [EnableRateLimiting("FixedLimit")]
-    
     public class ProdutoController : ControllerBase
     {
         private readonly IUnitOfWork _uof;
         //ao adicionar o ILogger, lembre de colocar a class
-        //private readonly ILogger<ProdutoController> _logger;
+        private readonly ILogger<ProdutoController> _logger;
         private readonly IMapper _mapper;
 
-        public ProdutoController(IUnitOfWork uof,/* ILogger<ProdutoController> logger,*/ IMapper mapper)
+        public ProdutoController(IUnitOfWork uof, ILogger<ProdutoController> logger, IMapper mapper)
         {
             _uof = uof;
-            //_logger = logger;
+            _logger = logger;
             _mapper = mapper;
         }
 
@@ -51,40 +50,19 @@ namespace Catalogo.Controllers
         /// Retorna os itens.
         /// </summary>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesDefaultResponseType]
         //[Authorize(Policy = "UserOnly")]
         public async Task<ActionResult<IEnumerable<ProdutosDTO>>> Get()
         {
-            try
-            {
-                var produtos = await _uof.ProductRepository.GetAllAsync();
-                var produtosDto = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
-             
 
-                if (produtosDto is  null)
-                {
-                    return NotFound();
-                }
+            var produtos = await _uof.ProductRepository.GetAllAsync();
+            var produtosDto = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
 
-                return Ok(produtosDto);
+            return Ok(produtosDto);
 
-            }
-            catch (Exception ex)
-            {
-
-                return BadRequest();
-            }
-            
         }
 
         
         [HttpGet("produtosCategoria/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesDefaultResponseType]
         public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetProdutosCategoria(int id)
         {
             var produtos = await _uof.ProductRepository.GetProdutosPorCategoria(id);
@@ -99,25 +77,11 @@ namespace Catalogo.Controllers
         /// </summary>
         /// 
         [HttpGet("{id:int}", Name = "ProdutoporID")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesDefaultResponseType]
         public async Task<ActionResult<ProdutosDTO>> GetById(int id)
 
         {
-            if (id <= 0)
-            {
-                return BadRequest("id invalido");
-            }
-
             var produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id);
             var produtoDto = _mapper.Map<ProdutosDTO>(produto);
-
-            if (produtoDto is null)
-            {
-                return NotFound();
-            }
 
             return Ok(produtoDto);
         }
@@ -154,10 +118,6 @@ namespace Catalogo.Controllers
         }
 
         [HttpPatch("{id:int}/UpdatePartial")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesDefaultResponseType]
         public async Task<ActionResult<ProdutoDTOUpdateResponse>> Patch(int id,JsonPatchDocument<ProdutoDTOUpdateRequest> patchProdutoDto)
         {
             if (patchProdutoDto is null || id == 0) return BadRequest();
@@ -186,9 +146,6 @@ namespace Catalogo.Controllers
         /// <returns></returns>
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesDefaultResponseType]
         public async Task<ActionResult<ProdutosDTO>> Post(ProdutosDTO produtoDto)
         {
             if (produtoDto is null)
@@ -209,9 +166,6 @@ namespace Catalogo.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesDefaultResponseType]
         public async Task<ActionResult<ProdutosDTO>> Put(int id, ProdutosDTO produtoDto)
         {
             if (id != produtoDto.ProdutoId)
