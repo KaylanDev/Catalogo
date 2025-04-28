@@ -18,10 +18,10 @@ public class GetProdutosxUnitTeste : IClassFixture<ProdutosTestexUnitController>
 
     public GetProdutosxUnitTeste(ProdutosTestexUnitController controller)
     {
-       
- 
-            _controller = new ProdutoController(controller.repository, controller.mapper);
-        }
+
+
+        _controller = new ProdutoController(controller.repository, controller.mapper);
+    }
 
     [Fact]
     public async Task GetProdutoById_Return_OkResult()
@@ -81,7 +81,7 @@ public class GetProdutosxUnitTeste : IClassFixture<ProdutosTestexUnitController>
     [Fact]
     public async Task GetProduto_Return_OkResult()
     {
-      
+
 
         //Act
         var data = await _controller.Get();

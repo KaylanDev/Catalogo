@@ -33,13 +33,13 @@ namespace Catalogo.Controllers
     {
         private readonly IUnitOfWork _uof;
         //ao adicionar o ILogger, lembre de colocar a class
-        private readonly ILogger<ProdutoController> _logger;
+        //private readonly ILogger<ProdutoController> _logger;
         private readonly IMapper _mapper;
 
-        public ProdutoController(IUnitOfWork uof, ILogger<ProdutoController> logger, IMapper mapper)
+        public ProdutoController(IUnitOfWork uof, /*ILogger<ProdutoController> logger*/ IMapper mapper)
         {
             _uof = uof;
-            _logger = logger;
+            //_logger = logger;
             _mapper = mapper;
         }
 
@@ -146,6 +146,9 @@ namespace Catalogo.Controllers
         /// <returns></returns>
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<ProdutosDTO>> Post(ProdutosDTO produtoDto)
         {
             if (produtoDto is null)
