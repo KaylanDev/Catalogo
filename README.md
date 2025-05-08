@@ -28,3 +28,28 @@ como um service, ha mais complexidade e mais codigo, porem é reutilizavel, reco
 
 ## SizeLimit e SetSize
 ao definir um SizeLimit no Middleware, é obrigatirio definir um Size ao coonfigurar o cache, caso contrario n ira ser salvo em cache.
+
+## implementacao controller
+
+            if (!_memoryCache.TryGetValue(CacheProdutosKey,out IEnumerable<Produtos>? produtos))
+            {
+                produtos = await _uof.ProductRepository.GetAllAsync();
+
+                if (produtos is not null && produtos.Any())
+                {
+                    var cacheOptions = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                        SlidingExpiration = TimeSpan.FromSeconds(15),
+                        Priority = CacheItemPriority.High,
+                    };
+
+                    _memoryCache.Set(CacheProdutosKey, produtos, cacheOptions);
+
+                }
+                else
+                {
+                    return NotFound("Nenhum produto encontrado");
+                }
+
+            }
