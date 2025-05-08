@@ -17,3 +17,14 @@ Este projeto foi criado com o objetivo de documentar e organizar todo o conteúd
 
 O projeto está organizado de forma a facilitar o acesso e compreensão dos diferentes tópicos abordados no curso. Cada seção representa um módulo ou conceito específico aprendido durante o período de estudo.
 
+# Cache
+A interface usada é IMemoryCache, com ela sera feita a implementação do Cache no projeto, podendo ser utilizado diretamento no controller ou como service
+
+## no Controlador
+no controlador, é usado menos codigo e menos complexidade, porem n é reutilizavel. exemplo
+
+## Service
+como um service, ha mais complexidade e mais codigo, porem é reutilizavel, recomendado para projetos medios e grandes
+
+## SizeLimit e SetSize
+ao definir um SizeLimit no Middleware, é obrigatirio definir um Size ao coonfigurar o cache, caso contrario n ira ser salvo em cache.
