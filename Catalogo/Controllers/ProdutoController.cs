@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.JsonPatch.Converters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -35,12 +36,15 @@ namespace Catalogo.Controllers
         //ao adicionar o ILogger, lembre de colocar a class
         //private readonly ILogger<ProdutoController> _logger;
         private readonly IMapper _mapper;
+        private readonly IMemoryCache _memoryCache;
+        private const string CacheProdutosKey = "produtosCache";
 
-        public ProdutoController(IUnitOfWork uof, /*ILogger<ProdutoController> logger*/ IMapper mapper)
+        public ProdutoController(IUnitOfWork uof, /*ILogger<ProdutoController> logger*/ IMapper mapper,IMemoryCache memoryCache)
         {
             _uof = uof;
             //_logger = logger;
             _mapper = mapper;
+            _memoryCache = memoryCache;
         }
 
 
@@ -54,7 +58,30 @@ namespace Catalogo.Controllers
         public async Task<ActionResult<IEnumerable<ProdutosDTO>>> Get()
         {
 
-            var produtos = await _uof.ProductRepository.GetAllAsync();
+            if (!_memoryCache.TryGetValue(CacheProdutosKey,out IEnumerable<Produtos>? produtos))
+            {
+                produtos = await _uof.ProductRepository.GetAllAsync();
+
+                if (produtos is not null && produtos.Any())
+                {
+                    var cacheOptions = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                        SlidingExpiration = TimeSpan.FromSeconds(15),
+                        Priority = CacheItemPriority.High,
+                    };
+
+                    _memoryCache.Set(CacheProdutosKey, produtos, cacheOptions);
+
+                }
+                else
+                {
+                    return NotFound("Nenhum produto encontrado");
+                }
+
+            }
+
+            
             var produtosDto = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
 
             return Ok(produtosDto);
@@ -80,7 +107,30 @@ namespace Catalogo.Controllers
         public async Task<ActionResult<ProdutosDTO>> GetById(int id)
 
         {
-            var produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id);
+           var CacheProdutoKey = $"produto_{id}";
+            //verifica se existe a chave no cache,caso sim, armazena na variavel
+            if (!_memoryCache.TryGetValue(CacheProdutoKey, out Produtos? produto))
+            {
+                produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id);
+
+                if (produto is not null )
+                {
+                    var cacheOptions = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                        SlidingExpiration = TimeSpan.FromSeconds(15),
+                        Priority = CacheItemPriority.High,
+                    };
+
+                    _memoryCache.Set(CacheProdutoKey, produto, cacheOptions);
+                }
+                else
+                {
+                    return NotFound("Produto não encontrado");
+                }
+
+            }
+
             var produtoDto = _mapper.Map<ProdutosDTO>(produto);
 
             return Ok(produtoDto);
@@ -156,9 +206,22 @@ namespace Catalogo.Controllers
                 return BadRequest();
             }
 
-            var produto = _mapper.Map<Produtos>(produtoDto); 
+            var produto = _mapper.Map<Produtos>(produtoDto);
             _uof.ProductRepository.Create(produto);
-           await _uof.Commit();
+
+            _memoryCache.Remove(CacheProdutosKey);
+            await _uof.Commit();
+            var cacheProdutoKey = $"produto_{produto.ProdutoId}";
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                SlidingExpiration = TimeSpan.FromSeconds(15),
+                Priority = CacheItemPriority.High,
+            };
+            _memoryCache.Set(cacheProdutoKey, produto, cacheOptions);
+
+
+           
             var produtoDTo = _mapper.Map<ProdutosDTO>(produto);
             return new CreatedAtRouteResult("ProdutoporID",
                 new { Id = produtoDTo.ProdutoId }, produtoDTo);
@@ -171,17 +234,23 @@ namespace Catalogo.Controllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult<ProdutosDTO>> Put(int id, ProdutosDTO produtoDto)
         {
-            if (id != produtoDto.ProdutoId)
+            if (id <= 0 || produtoDto is null || id != produtoDto.ProdutoId)
             {
-                return BadRequest("Id informado é diferente");
+                return BadRequest("Dados incosistentes");
             }
-            if (produtoDto is null)
-            {
-                return BadRequest();
-            }
+           
             var produto = _mapper.Map<Produtos>(produtoDto);
               _uof.ProductRepository.Update(produto);
           await  _uof.Commit();
+
+            _memoryCache.Set($"produto_{id}",produto,new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
+                SlidingExpiration = TimeSpan.FromSeconds(15),
+                Priority = CacheItemPriority.High,
+            });
+            _memoryCache.Remove(CacheProdutosKey);
+
             var produtoAttDto = _mapper.Map<ProdutosDTO>(produto);
             return Ok(produtoDto);
         }
@@ -195,6 +264,10 @@ namespace Catalogo.Controllers
             var produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id)
 ;           _uof.ProductRepository.Delete(produto);
           await  _uof.Commit();
+
+            _memoryCache.Remove(CacheProdutosKey);
+            _memoryCache.Remove($"produto_{id}");
+
             var ProdutoDto = _mapper.Map<ProdutosDTO>(produto);
 
             return Ok(ProdutoDto);

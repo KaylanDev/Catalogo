@@ -105,10 +105,7 @@ builder.Services.AddIdentity<AplicationUsers, IdentityRole>().
     AddEntityFrameworkStores<AppDbContext>().
     AddDefaultTokenProviders();
 
-
-
-
-//                                                                                    Autentificação bearer jwt
+//Autentificação bearer jwt
 var SecretKey = builder.Configuration["JWT:Secretkey"] ?? throw new ArgumentNullException("secret key is invalid!");
 builder.Services.AddAuthentication(options =>
 {
@@ -149,8 +146,7 @@ builder.Services.AddAuthorization(options =>
 var myRateLimit = new MyRateLimitOptions();
 
 builder.Configuration.GetSection(MyRateLimitOptions.MyRateLimit).Bind(myRateLimit);
-
-
+builder.Services.AddMemoryCache();
 builder.Services.AddRateLimiter(option =>
 {
     option.AddFixedWindowLimiter(policyName: "FixedLimit", context =>
@@ -199,6 +195,7 @@ builder.Services.AddScoped<ApiLoggingFilters>();
 builder.Services.AddAutoMapper(typeof(ProdutosDTOMappingProfile));
 
 //aplica o DI
+builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped(typeof(IRepositoy<>), typeof(Repository<>));

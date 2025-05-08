@@ -34,6 +34,7 @@ namespace Catalogo.Controllers
         private readonly ILogger<CategoriasController> _logger;
 
 
+
         //variavel para usar o configuration
         //private readonly IConfiguration _configuration;
 

@@ -14,12 +14,14 @@ namespace Catalogo.Repositories
         }
         public async Task<IEnumerable<T>> GetAllAsync()
         {
+            Thread.Sleep(5000);
             return await _context.Set<T>().AsNoTracking().ToListAsync();
 
         }
 
         public async Task<T> GetByIdAsync(Expression<Func<T, bool>> predicate)
         {
+            Thread.Sleep(5000);
             return await _context.Set<T>().FirstOrDefaultAsync(predicate);
         }
 
