@@ -7,6 +7,7 @@ using Catalogo.Migrations;
 using Catalogo.Models;
 using Catalogo.Paginations;
 using Catalogo.Repositories;
+using Catalogo.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -38,13 +39,15 @@ namespace Catalogo.Controllers
         private readonly IMapper _mapper;
         private readonly IMemoryCache _memoryCache;
         private const string CacheProdutosKey = "produtosCache";
+        private readonly ICacheService _cacheService;
 
-        public ProdutoController(IUnitOfWork uof, /*ILogger<ProdutoController> logger*/ IMapper mapper,IMemoryCache memoryCache)
+        public ProdutoController(IUnitOfWork uof, /*ILogger<ProdutoController> logger*/ IMapper mapper,IMemoryCache memoryCache,ICacheService cacheService)
         {
             _uof = uof;
             //_logger = logger;
             _mapper = mapper;
             _memoryCache = memoryCache;
+            _cacheService = cacheService;
         }
 
 
@@ -58,31 +61,10 @@ namespace Catalogo.Controllers
         public async Task<ActionResult<IEnumerable<ProdutosDTO>>> Get()
         {
 
-            if (!_memoryCache.TryGetValue(CacheProdutosKey,out IEnumerable<Produtos>? produtos))
-            {
-                produtos = await _uof.ProductRepository.GetAllAsync();
 
-                if (produtos is not null && produtos.Any())
-                {
-                    var cacheOptions = new MemoryCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
-                        SlidingExpiration = TimeSpan.FromSeconds(15),
-                        Priority = CacheItemPriority.High,
-                    };
-
-                    _memoryCache.Set(CacheProdutosKey, produtos, cacheOptions);
-
-                }
-                else
-                {
-                    return NotFound("Nenhum produto encontrado");
-                }
-
-            }
-
+               var produtos = await _cacheService.GetOrCreate(CacheProdutosKey, async () =>  _uof.ProductRepository.GetAllAsync());
             
-            var produtosDto = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
+            var produtosDto = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos.Result);
 
             return Ok(produtosDto);
 
