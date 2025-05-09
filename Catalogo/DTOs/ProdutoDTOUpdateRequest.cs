@@ -9,6 +9,7 @@ namespace Catalogo.DTOs
         public float Estoque { get; set; }
         public DateTime DataCadastro { get; set; }
         public int CategoriaId { get; set; } = 0;
+        public decimal preco { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

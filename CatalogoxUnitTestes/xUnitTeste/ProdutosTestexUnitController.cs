@@ -2,7 +2,9 @@
 using Catalogo.Data;
 using Catalogo.DTOs.Mappins;
 using Catalogo.Repositories;
+using Catalogo.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,7 @@ public class ProdutosTestexUnitController
 {
     public IUnitOfWork repository;
     public IMapper mapper;
+    public ICacheService _cache;
    
     public static DbContextOptions<AppDbContext> dbContextOptions { get; }
 
@@ -39,9 +42,10 @@ public class ProdutosTestexUnitController
     {
         var configMap = new MapperConfiguration(cfg =>
         cfg.AddProfile(new ProdutosDTOMappingProfile()));
-
+        var memorycache = new MemoryCache(new MemoryCacheOptions());
         mapper = configMap.CreateMapper();
         var context = new AppDbContext(dbContextOptions);
         repository = new UnitOfWork(context);
+        _cache = new CacheService(memorycache);
     }
 }

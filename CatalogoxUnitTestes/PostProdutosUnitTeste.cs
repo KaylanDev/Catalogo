@@ -20,7 +20,7 @@ namespace CatalogoxUnitTestes
         {
 
 
-            _controller = new ProdutoController(controller.repository, controller.mapper);
+            _controller = new ProdutoController(controller.repository, controller.mapper, controller._cache);
         }
 
 

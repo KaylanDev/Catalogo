@@ -34,103 +34,20 @@ namespace Catalogo.Controllers
     public class ProdutoController : ControllerBase
     {
         private readonly IUnitOfWork _uof;
-        //ao adicionar o ILogger, lembre de colocar a class
-        //private readonly ILogger<ProdutoController> _logger;
+
         private readonly IMapper _mapper;
-        private readonly IMemoryCache _memoryCache;
         private const string CacheProdutosKey = "produtosCache";
         private readonly ICacheService _cacheService;
 
-        public ProdutoController(IUnitOfWork uof, /*ILogger<ProdutoController> logger*/ IMapper mapper,IMemoryCache memoryCache,ICacheService cacheService)
+        public ProdutoController(IUnitOfWork uof, IMapper mapper, ICacheService cacheService)
         {
             _uof = uof;
-            //_logger = logger;
             _mapper = mapper;
-            _memoryCache = memoryCache;
+            
             _cacheService = cacheService;
         }
 
-
-        //comentarios em xml
-
-        /// <summary>
-        /// Retorna os itens.
-        /// </summary>
-        [HttpGet]
-        //[Authorize(Policy = "UserOnly")]
-        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> Get()
-        {
-
-
-               var produtos = await _cacheService.GetOrCreate(CacheProdutosKey, async () =>  _uof.ProductRepository.GetAllAsync());
-            
-            var produtosDto = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos.Result);
-
-            return Ok(produtosDto);
-
-        }
-
-        
-        [HttpGet("produtosCategoria/{id}")]
-        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetProdutosCategoria(int id)
-        {
-            var produtos = await _uof.ProductRepository.GetProdutosPorCategoria(id);
-            if (produtos is null) return BadRequest();
-            //var destino = _mapper.Map<Destino>(origem)
-            var produtosDTO = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
-            return Ok(produtos);
-        }
-
-        /// <summary>
-        /// retorna elemento pelo id
-        /// </summary>
-        /// 
-        [HttpGet("{id:int}", Name = "ProdutoporID")]
-        public async Task<ActionResult<ProdutosDTO>> GetById(int id)
-
-        {
-           var CacheProdutoKey = $"produto_{id}";
-            //verifica se existe a chave no cache,caso sim, armazena na variavel
-            if (!_memoryCache.TryGetValue(CacheProdutoKey, out Produtos? produto))
-            {
-                produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id);
-
-                if (produto is not null )
-                {
-                    var cacheOptions = new MemoryCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
-                        SlidingExpiration = TimeSpan.FromSeconds(15),
-                        Priority = CacheItemPriority.High,
-                    };
-
-                    _memoryCache.Set(CacheProdutoKey, produto, cacheOptions);
-                }
-                else
-                {
-                    return NotFound("Produto não encontrado");
-                }
-
-            }
-
-            var produtoDto = _mapper.Map<ProdutosDTO>(produto);
-
-            return Ok(produtoDto);
-        }
-
-        [HttpGet("paramans")]
-        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetParamns([FromQuery]ProdutosParameters produtosParameters)
-        {
-            var produtos =await _uof.ProductRepository.GetPagination(produtosParameters);
-            return ObterProduto(produtos);
-        }
-        [HttpGet("Produtos/Filtros")]
-        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetFiltro([FromQuery] ProdutosFiltroPrecos produtosFiltroPrecos)
-        {
-            var produtos = await _uof.ProductRepository.GetProdutosFiltro(produtosFiltroPrecos);
-            return ObterProduto(produtos);
-        }
-
+        private string CacheProdutoKey(int id) => $"produto_{id}";
         private ActionResult<IEnumerable<ProdutosDTO>> ObterProduto(IPagedList<Produtos> produtos)
         {
             var metaDados = new
@@ -149,8 +66,68 @@ namespace Catalogo.Controllers
             return Ok(produtosDto);
         }
 
+
+        //comentarios em xml
+
+        /// <summary>
+        /// Retorna os itens.
+        /// </summary>
+        [HttpGet]
+        //[Authorize(Policy = "UserOnly")]
+        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> Get()
+        {
+
+
+            var produtos = await _cacheService.GetOrCreate(CacheProdutosKey, async () => _uof.ProductRepository.GetAllAsync());
+
+            var produtosDto = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos.Result);
+
+            return Ok(produtosDto);
+
+        }
+
+        [HttpGet("produtosCategoria/{id}")]
+        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetProdutosCategoria(int id)
+        {
+            var produtos = await _uof.ProductRepository.GetProdutosPorCategoria(id);
+            if (produtos is null) return BadRequest();
+            //var destino = _mapper.Map<Destino>(origem)
+            var produtosDTO = _mapper.Map<IEnumerable<ProdutosDTO>>(produtos);
+            return Ok(produtos);
+        }
+
+        /// <summary>
+        /// retorna elemento pelo id
+        /// </summary>
+        /// 
+        [HttpGet("{id:int}", Name = "ProdutoporID")]
+        public async Task<ActionResult<ProdutosDTO>> GetById(int id)
+        {
+            if (id <= 0) return BadRequest("id invalido");
+            var cacheProdutoKey = CacheProdutoKey(id);
+            var produto = await _cacheService.GetOrCreate(cacheProdutoKey, async () => _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id));
+
+
+            var produtoDto = _mapper.Map<ProdutosDTO>(produto.Result);
+
+            return Ok(produtoDto);
+        }
+
+        [HttpGet("paramans")]
+        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetParamns([FromQuery] ProdutosParameters produtosParameters)
+        {
+            var produtos = await _uof.ProductRepository.GetPagination(produtosParameters);
+            return ObterProduto(produtos);
+        }
+        [HttpGet("Produtos/Filtros")]
+        public async Task<ActionResult<IEnumerable<ProdutosDTO>>> GetFiltro([FromQuery] ProdutosFiltroPrecos produtosFiltroPrecos)
+        {
+            var produtos = await _uof.ProductRepository.GetProdutosFiltro(produtosFiltroPrecos);
+            return ObterProduto(produtos);
+        }
+
         [HttpPatch("{id:int}/UpdatePartial")]
-        public async Task<ActionResult<ProdutoDTOUpdateResponse>> Patch(int id,JsonPatchDocument<ProdutoDTOUpdateRequest> patchProdutoDto)
+        public async Task<ActionResult<ProdutoDTOUpdateResponse>> Patch(int id, JsonPatchDocument<ProdutoDTOUpdateRequest> patchProdutoDto)
         {
             if (patchProdutoDto is null || id == 0) return BadRequest();
 
@@ -163,12 +140,14 @@ namespace Catalogo.Controllers
 
             var produtoUpdateRequest = _mapper.Map<ProdutoDTOUpdateRequest>(produto);
             patchProdutoDto.ApplyTo(produtoUpdateRequest);
-            if (!ModelState.IsValid || TryValidateModel(produtoUpdateRequest)) return BadRequest(ModelState);
-            
+            if (!ModelState.IsValid || TryValidateModel(produtoUpdateRequest)) return BadRequest("erro");
+
 
             _mapper.Map(produtoUpdateRequest, produto);
             _uof.ProductRepository.Update(produto);
-          await  _uof.Commit();
+            await _uof.Commit();
+            _cacheService.Remove(CacheProdutosKey);
+           await _cacheService.GetOrCreate(CacheProdutoKey(id),async () => _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id));
             return Ok(_mapper.Map<ProdutoDTOUpdateResponse>(produto));
         }
 
@@ -176,7 +155,6 @@ namespace Catalogo.Controllers
         /// adciona um novo elemento
         /// </summary>
         /// <returns></returns>
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -189,21 +167,15 @@ namespace Catalogo.Controllers
             }
 
             var produto = _mapper.Map<Produtos>(produtoDto);
+
             _uof.ProductRepository.Create(produto);
+            _cacheService.Remove(CacheProdutosKey);
 
-            _memoryCache.Remove(CacheProdutosKey);
             await _uof.Commit();
-            var cacheProdutoKey = $"produto_{produto.ProdutoId}";
-            var cacheOptions = new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
-                SlidingExpiration = TimeSpan.FromSeconds(15),
-                Priority = CacheItemPriority.High,
-            };
-            _memoryCache.Set(cacheProdutoKey, produto, cacheOptions);
 
+            var cacheProdutoKey = CacheProdutoKey(produto.ProdutoId);
+            await _cacheService.GetOrCreate(cacheProdutoKey, async () => _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == produto.ProdutoId));
 
-           
             var produtoDTo = _mapper.Map<ProdutosDTO>(produto);
             return new CreatedAtRouteResult("ProdutoporID",
                 new { Id = produtoDTo.ProdutoId }, produtoDTo);
@@ -220,20 +192,14 @@ namespace Catalogo.Controllers
             {
                 return BadRequest("Dados incosistentes");
             }
-           
+
             var produto = _mapper.Map<Produtos>(produtoDto);
-              _uof.ProductRepository.Update(produto);
-          await  _uof.Commit();
+            _uof.ProductRepository.Update(produto);
+            await _uof.Commit();
 
-            _memoryCache.Set($"produto_{id}",produto,new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30),
-                SlidingExpiration = TimeSpan.FromSeconds(15),
-                Priority = CacheItemPriority.High,
-            });
-            _memoryCache.Remove(CacheProdutosKey);
+            _cacheService.Remove(CacheProdutosKey);
+            await _cacheService.GetOrCreate(CacheProdutoKey(id), async () => _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id));
 
-            var produtoAttDto = _mapper.Map<ProdutosDTO>(produto);
             return Ok(produtoDto);
         }
 
@@ -243,12 +209,12 @@ namespace Catalogo.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ProdutosDTO>> Delete(int id)
         {
-            var produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id)
-;           _uof.ProductRepository.Delete(produto);
-          await  _uof.Commit();
+            var produto = await _uof.ProductRepository.GetByIdAsync(p => p.ProdutoId == id);
+            _uof.ProductRepository.Delete(produto);
+            await _uof.Commit();
 
-            _memoryCache.Remove(CacheProdutosKey);
-            _memoryCache.Remove($"produto_{id}");
+            _cacheService.Remove(CacheProdutosKey);
+            _cacheService.Remove(CacheProdutoKey(id));
 
             var ProdutoDto = _mapper.Map<ProdutosDTO>(produto);
 
