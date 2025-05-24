@@ -66,7 +66,7 @@ namespace Catalogo.Controllers
         /// </list>
 
         [HttpGet]
-        //[Authorize]
+        [Authorize]
 
         public async Task<ActionResult<IEnumerable<CategoriasDTO>>> Get()
         {

@@ -210,10 +210,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.ConfigureExeptionHandler();
+
 }
+
+app.UseSwagger();
+app.UseSwaggerUI();
+app.ConfigureExeptionHandler();
 
 
 app.UseHttpsRedirection();
